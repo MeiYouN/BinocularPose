@@ -3,7 +3,7 @@ import numpy as np
 from BinocularPose.mytools.camera_utils import Undistort
 
 
-def batch_triangulate(keypoints_, Pall, min_view=2):
+def batch_triangulate(keypoints_, Pall, min_view=2)->np.ndarray:
     """ triangulate the keypoints of whole body
 
     Args:
@@ -43,7 +43,7 @@ def batch_triangulate(keypoints_, Pall, min_view=2):
 
 
 class SimpleTriangulate:
-    def __init__(self, mode):
+    def __init__(self, mode='naive'):
         self.mode = mode
 
     @staticmethod
@@ -59,7 +59,7 @@ class SimpleTriangulate:
             pelvis_undis.append(pelvis)
         return pelvis_undis
 
-    def __call__(self, keypoints, cameras):
+    def __call__(self, keypoints:np.ndarray, cameras:dict)->np.ndarray:
         '''
             keypoints: [nViews, nJoints, 3]
 
@@ -75,8 +75,8 @@ class SimpleTriangulate:
         else:
             keypoints3d, k2d = iterative_triangulate(keypoints, cameras['P'], dist_max=25)
             print(2)
-        print(keypoints3d)
-        return {'keypoints3d': keypoints3d}
+        # print(keypoints3d)
+        return keypoints3d
 
 
 
