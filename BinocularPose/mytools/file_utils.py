@@ -54,16 +54,38 @@ def append_json(file, data):
 
 save_annot = save_json
 
-def getFileList(root, ext='.jpg'):
+# def getFileList(root, ext='.jpg'):
+#     files = []
+#     dirs = os.listdir(root)
+#     while len(dirs) > 0:
+#         path = dirs.pop()
+#         fullname = join(root, path)
+#         if os.path.isfile(fullname) and fullname.endswith(ext):
+#             files.append(path)
+#         elif os.path.isdir(fullname):
+#             for s in os.listdir(fullname):
+#                 newDir = join(path, s)
+#                 dirs.append(newDir)
+#     files = sorted(files)
+#     return files
+
+def getFileList(root, ext='.jpg', max=-1, ret_full=False):
     files = []
-    dirs = os.listdir(root)
+    dirs = sorted(os.listdir(root))
     while len(dirs) > 0:
         path = dirs.pop()
+        if path.startswith('.'):continue
         fullname = join(root, path)
         if os.path.isfile(fullname) and fullname.endswith(ext):
-            files.append(path)
+            if ret_full:
+                files.append(fullname)
+            else:
+                files.append(path)
         elif os.path.isdir(fullname):
-            for s in os.listdir(fullname):
+            names = sorted(os.listdir(fullname))
+            if max != -1 and os.path.isfile(join(fullname, names[0])):
+                names = names[:max]
+            for s in names:
                 newDir = join(path, s)
                 dirs.append(newDir)
     files = sorted(files)

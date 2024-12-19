@@ -19,7 +19,7 @@ def main():
     cameras = load_yml('.\BinocularPose\config')
     folder_path = "C:/Users/hu/Desktop/Z55/ThreeD_demo/data10/video"
     save_path = './run'
-    left_video = folder_path + "/01.mp4"
+    # left_video = folder_path + "/01.mp4"
     left_video = 0
     right_video = 1
     # right_video = folder_path + "/02.mp4"
