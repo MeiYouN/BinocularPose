@@ -156,7 +156,7 @@ def calib_extri(path, image, intriname, image_id):
     write_intri(join(path, 'intri.yml'), intri)
     write_extri(join(path, 'extri.yml'), extri)
 
-if __name__ == "__main__":
+def parser_args():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('path', type=str)
@@ -168,6 +168,12 @@ if __name__ == "__main__":
     parser.add_argument('--tryfocal', action='store_true')
     parser.add_argument('--tryextri', action='store_true')
     parser.add_argument('--image_id', type=int, default=0, help='Image id used for extrinsic calibration')
+    return parser.parse_args()
 
-    args = parser.parse_args()
+
+if __name__ == "__main__":
+    import argparse
+
+
+    args = parser_args()
     calib_extri(args.path, args.image, intriname=args.intri, image_id=args.image_id)

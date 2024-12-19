@@ -245,6 +245,24 @@ def parser_args():
 
     return parser.parse_args()
 
+def det_board(path, pattern, grid, seq):
+    args = parser_args()
+    args.path = path
+    args.out = path + 'output'
+    args.pattern = pattern
+    args.grid = grid
+    args.seq = seq
+
+    if args.seq:
+        detect_chessboard_sequence(args.path, args.out, pattern=args.pattern, gridSize=args.grid, args=args, image=args.image)
+    else:
+        detect_chessboard(args.path, args.image, args.out, pattern=args.pattern, gridSize=args.grid, args=args)
+
+    if args.check:
+        check_chessboard(args.path, args.out)
+
+
+
 if __name__ == "__main__":
 
     args = parser_args()
