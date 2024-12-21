@@ -245,7 +245,7 @@ def parser_args():
 
     return parser.parse_args()
 
-def det_board(path, pattern, grid, seq):
+def det_board(path, pattern, grid, seq=False):
     args = parser_args()
     args.path = path
     args.out = path + 'output'

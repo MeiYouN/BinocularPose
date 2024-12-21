@@ -75,7 +75,7 @@ def solvePnP(k3d, k2d, K, dist, flag, tryextri=False):
     # print(err)
     return err, rvec, tvec, kpts_repro
 
-def calib_extri(path, image, intriname, image_id):
+def calib_extri(path, intriname, image_id,image='images'):
     camnames = sorted(os.listdir(join(path, image)))
     camnames = [c for c in camnames if os.path.isdir(join(path, image, c))]
     if intriname is None:
@@ -176,4 +176,4 @@ if __name__ == "__main__":
 
 
     args = parser_args()
-    calib_extri(args.path, args.image, intriname=args.intri, image_id=args.image_id)
+    calib_extri(args.path, image=args.image, intriname=args.intri, image_id=args.image_id)
