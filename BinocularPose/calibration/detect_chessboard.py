@@ -69,9 +69,9 @@ def getChessboard3d(pattern, gridSize, axis='yx'):
     object_points = object_points * gridSize
     return object_points
 
-def create_chessboard(path, image, pattern, gridSize, ext, overwrite=True):
+def create_chessboard(path, image, pattern, gridSize, ext, axis, overwrite=True):
     print('Create chessboard {}'.format(pattern))
-    keypoints3d = getChessboard3d(pattern, gridSize=gridSize, axis=args.axis)
+    keypoints3d = getChessboard3d(pattern, gridSize=gridSize, axis=axis)
     keypoints2d = np.zeros((keypoints3d.shape[0], 3))
     imgnames = getFileList(join(path, image), ext=ext)
     template = {
@@ -114,7 +114,7 @@ def _detect_chessboard(datas, path, image, out, pattern):
             cv2.imwrite(outname, show)
 
 def detect_chessboard(path, image, out, pattern, gridSize, args):
-    create_chessboard(path, image, pattern, gridSize, ext=args.ext, overwrite=args.overwrite3d)
+    create_chessboard(path, image, pattern, gridSize, ext=args.ext, axis=args.axis ,overwrite=args.overwrite3d)
     dataset = ImageFolder(path, image=image, annot='chessboard', ext=args.ext)
     dataset.isTmp = False
     trange = list(range(len(dataset)))
@@ -224,9 +224,9 @@ dir2 = 'D:\Desktop\EveryThing\WorkProject\ThreeD_demo\data11\dimian/output'
 def parser_args():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('path', type=str)
+    parser.add_argument('path', type=str,default='')
     parser.add_argument('--image', type=str, default='images')
-    parser.add_argument('--out', type=str, required=True)
+    parser.add_argument('--out', type=str,default='')
     parser.add_argument('--ext', type=str, default='.jpg', choices=['.jpg', '.png'])
     parser.add_argument('--pattern', type=lambda x: (int(x.split(',')[0]), int(x.split(',')[1])),
                         help='The pattern of the chessboard', default=(7, 5))
@@ -246,20 +246,28 @@ def parser_args():
     return parser.parse_args()
 
 def det_board(path, pattern, grid, seq=False):
-    args = parser_args()
-    args.path = path
-    args.out = path + 'output'
-    args.pattern = pattern
-    args.grid = grid
-    args.seq = seq
+    # args = parser_args()
+    import argparse
+    args_path = path
+    args_out = path + 'output'
+    args_pattern = pattern
+    args_grid = grid
+    args_seq = seq
+    args_image = 'images'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mp', type=int, default=4)
+    parser.add_argument('--overwrite3d', action='store_true')
+    parser.add_argument('--ext', type=str, default='.jpg', choices=['.jpg', '.png'])
+    parser.add_argument('--axis', type=str, default='yx')
+    args = parser.parse_args()
 
-    if args.seq:
-        detect_chessboard_sequence(args.path, args.out, pattern=args.pattern, gridSize=args.grid, args=args, image=args.image)
+    if args_seq:
+        detect_chessboard_sequence(args_path, args_out, pattern=args_pattern, gridSize=args_grid, args=args, image=args.image)
     else:
-        detect_chessboard(args.path, args.image, args.out, pattern=args.pattern, gridSize=args.grid, args=args)
+        detect_chessboard(args_path, args_image, args_out, pattern=args_pattern, gridSize=args_grid, args=args)
 
-    if args.check:
-        check_chessboard(args.path, args.out)
+    if True:
+        check_chessboard(args_path, args_out)
 
 
 

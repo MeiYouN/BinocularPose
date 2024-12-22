@@ -3,7 +3,6 @@ import queue
 import threading
 
 import cv2
-from alfred.modules.data.split_voc import save_dir
 
 from BinocularPose.calibration.calib_extri import calib_extri
 from BinocularPose.calibration.extract_video import extract_video
@@ -22,9 +21,9 @@ class VideoCapture:
         self.q = queue.Queue(maxsize=3)
         self.stop_threads = False  # to gracefully close sub-thread
         self.cap.grab()
-        th = threading.Thread(target=self._reader)
-        th.daemon = True  # 设置工作线程为后台运行
-        th.start()
+        # th = threading.Thread(target=self._reader)
+        # th.daemon = True  # 设置工作线程为后台运行
+        # th.start()
 
     # 实时读帧，只保存最后一帧
     def _reader(self):
@@ -40,7 +39,9 @@ class VideoCapture:
             self.q.put(frame)
 
     def read(self):
-        return self.q.get()
+        ret, frame = self.cap.read()
+        return frame
+        # return self.q.get()
 
     def terminate(self):
         self.stop_threads = True
@@ -76,9 +77,10 @@ class StereoCamera:
 
         frameL = self.capL.read()
         frameR = self.capR.read()
+        if frameL is None or frameR is None:
+            return None, None
         self.writerL.write(frameL)
         self.writerR.write(frameR)
-
         return frameL, frameR
 
     @staticmethod
@@ -107,12 +109,20 @@ class StereoCamera:
         self.capR.terminate()
 
 
-def capture(cam_id_l, cam_id_r, save_dir):
+def capture(cam_id_l, cam_id_r, save_dir, frameSize=(2048, 1536), fps=20):
 
-    cams = StereoCamera(save_dir, cam_id_l, cam_id_r, fps=20)
+    dir01 = save_dir + '/images/01'
+    dir02 = save_dir + '/images/02'
+    cams = StereoCamera(save_dir, cam_id_l, cam_id_r,frameSize[0] ,frameSize[1] ,fps=fps)
+    cams.create_file(dir01)
+    cams.create_file(dir02)
+
+
     i = 0
     while True:
         frameL, frameR = cams.capture()
+        if frameL is None or frameR is None:
+            break
         l = frameL.copy()
         r = frameR.copy()
         cv2.namedWindow('left', 0)
@@ -121,31 +131,32 @@ def capture(cam_id_l, cam_id_r, save_dir):
         cv2.resizeWindow('right', 640, 480)
         cv2.imshow('left', l)
         cv2.imshow('right', r)
-        key = cv2.waitKey(10)
+        key = cv2.waitKey(30)
         if key == ord('q'):
             break
         elif key == ord('c') or key == ord('s'):
             print("save image:{:0=3d}".format(i))
-            cv2.imwrite(os.path.join(save_dir + "/images/01", "{:0=6d}.png".format(i)), frameL)
-            cv2.imwrite(os.path.join(save_dir + "/images/02", "{:0=6d}.png".format(i)), frameR)
+            cv2.imwrite(os.path.join(dir01, "{:0=6d}.jpg".format(i)), frameL)
+            cv2.imwrite(os.path.join(dir02, "{:0=6d}.jpg".format(i)), frameR)
             i += 1
-    cams.close()
-    print(f'已完成图片采集，共{i}张')
+    # cams.close()
+    print(f'已完成图片采集，共保存{i}张图片')
     cv2.destroyAllWindows()
 
 def main():
     # cam_id_l = 1
     # cam_id_r = 0
-    cam_id_l = './demo_data/demo2/Camera Roll/01.mp4'
-    cam_id_r = './demo_data/demo2/Camera Roll/02.mp4'
+    cam_id_l = './demo_data/demo2/v1080/01.mp4'
+    cam_id_r = './demo_data/demo2/v1080/02.mp4'
     dir_path = './demo_data/demo2/'
-
-    capture(cam_id_l,cam_id_r,dir_path)
-
-    # extract_video(dir_path, 4)
-    det_board(dir_path, (7,5), 0.1)
-    calib_extri(dir_path, 'demo_data/demo2/intri.yml',3)
-
+    print(1)
+    # capture(cam_id_l,cam_id_r,dir_path)
+    print(2)
+    # extract_video(dir_path, 4)s
+    det_board(dir_path, (6,4), 0.1)
+    print(3)
+    calib_extri(dir_path, 'demo_data/demo2/intri.yml',1)
+    print(4)
 
 if __name__ == '__main__':
     main()

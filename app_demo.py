@@ -16,13 +16,13 @@ from BinocularPose.models.mymmpose.mymmpose import MyMMP
 
 
 def main():
-    cameras = load_yml('.\BinocularPose\config')
-    folder_path = "C:/Users/hu/Desktop/Z55/ThreeD_demo/data10/video"
-    save_path = './run'
-    # left_video = folder_path + "/01.mp4"
-    left_video = 0
-    right_video = 1
-    # right_video = folder_path + "/02.mp4"
+    cameras = load_yml('.\demo_data\demo2')
+    folder_path = "./demo_data/demo2/v1080"
+    save_path = './run/demo2'
+    left_video = folder_path + "/01.mp4"
+    right_video = folder_path + "/02.mp4"
+    # left_video = 0
+    # right_video = 1
     capL = cv2.VideoCapture(left_video)
     capR = cv2.VideoCapture(right_video)
 

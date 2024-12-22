@@ -75,7 +75,7 @@ def solvePnP(k3d, k2d, K, dist, flag, tryextri=False):
     # print(err)
     return err, rvec, tvec, kpts_repro
 
-def calib_extri(path, intriname, image_id,image='images'):
+def calib_extri(path, intriname, image_id,image='images',tryfocal=False):
     camnames = sorted(os.listdir(join(path, image)))
     camnames = [c for c in camnames if os.path.isdir(join(path, image, c))]
     if intriname is None:
@@ -94,7 +94,7 @@ def calib_extri(path, intriname, image_id,image='images'):
     # methods = [cv2.SOLVEPNP_ITERATIVE, cv2.SOLVEPNP_P3P, cv2.SOLVEPNP_AP3P, cv2.SOLVEPNP_EPNP, cv2.SOLVEPNP_DLS, cv2.SOLVEPNP_IPPE, cv2.SOLVEPNP_SQPNP]
     methods = [cv2.SOLVEPNP_ITERATIVE]
     for ic, cam in enumerate(camnames):
-        imagenames = sorted(glob(join(path, image, cam, '*{}'.format(args.ext))))
+        imagenames = sorted(glob(join(path, image, cam, '*{}'.format('.png'))))
         chessnames = sorted(glob(join(path, 'chessboard', cam, '*.json')))
         # chessname = chessnames[0]
         assert len(chessnames) > 0, cam
@@ -122,7 +122,7 @@ def calib_extri(path, intriname, image_id,image='images'):
             continue
         k3d = k3d[valididx]
         k2d = k2d[valididx]
-        if args.tryfocal:
+        if tryfocal:
             infos = []
             for focal in range(500, 5000, 10):
                 dist = intri[cam]['dist']
