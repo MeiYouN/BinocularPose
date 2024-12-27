@@ -66,12 +66,12 @@ class SimpleTriangulate:
         output:
             keypoints3d: (nJoints, 4)
         '''
-        print(keypoints.shape)
+        # print(keypoints.shape)
         keypoints = self.undistort(keypoints, cameras)
         keypoints = np.stack(keypoints)
         if self.mode == 'naive':
             keypoints3d = batch_triangulate(keypoints, cameras['P'])
-            print(1)
+            # print(1)
         else:
             keypoints3d, k2d = iterative_triangulate(keypoints, cameras['P'], dist_max=25)
             print(2)
