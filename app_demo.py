@@ -60,30 +60,36 @@ def main():
 
     jf = JsonFile(folder_path, save_path)
 
-    while True:
+    runing = True
+    while runing:
         timer.start()
         retl, framel = capL.read()
         retr, framer = capR.read()
-        if not retl or not retr:
+        if not retl or not retr or not runing:
             print(f'视频已结束，共{jf.index}帧')
             break
-        bbox1 = yolo(framel)
-        bbox2 = yolo(framer)
+        # bbox1 = yolo(framel)
+        # bbox2 = yolo(framer)
         keypoints3d = None
+        posekeypointsl = model(framel, None)
+        posekeypointsr = model(framer, None)
+        print(posekeypointsl)
+        print(posekeypointsr)
 
-        if bbox1 is not None and bbox2 is not None:
+        if posekeypointsl is not None and posekeypointsr is not None:
             # print(bbox)
-            posekeypointsl = model(framel, bbox1)
-            posekeypointsr = model(framer, bbox2)
+
 
             keypoints = np.concatenate([[posekeypointsl], [posekeypointsr]])
             # print(keypoints)
             keypoints3d = triangulate(keypoints, cameras)
             vis.show(keypoints3d)
-            cv2.waitKey()
             keypoints3d = keypoints3d.tolist()
+        else:
+            print('视角不完整')
         jf.update(keypoints3d)
         timer.stop()
+
     jf.save()
 
 if __name__ == '__main__':

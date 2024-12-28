@@ -214,6 +214,8 @@ class MyMMP:
     def select_bbox(self,result):
         keypoints_data = result[0].pred_instances
         max_key_index = np.argmax(keypoints_data.bbox_scores)
+        if keypoints_data.bbox_scores[max_key_index] <= 0.50 :
+            return None
         keypoint = keypoints_data.keypoints[max_key_index]
         keypoint_score = keypoints_data.keypoint_scores[max_key_index]
         return np.c_[keypoint, keypoint_score]
