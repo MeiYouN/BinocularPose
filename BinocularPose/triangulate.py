@@ -62,7 +62,6 @@ class SimpleTriangulate:
     def __call__(self, keypoints:np.ndarray, cameras:dict)->np.ndarray:
         '''
             keypoints: [nViews, nJoints, 3]
-
         output:
             keypoints3d: (nJoints, 4)
         '''
