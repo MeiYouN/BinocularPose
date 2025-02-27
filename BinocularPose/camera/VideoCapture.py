@@ -55,7 +55,7 @@ class VideoCapture:
 
 class StereoCamera:
 
-    def __init__(self,save_dir ,cam_id_l=1, cam_id_r=0 ,wight=640, height=480, fps=30):
+    def __init__(self,save_dir ,cam_id_l=1, cam_id_r=0 ,wight=640, height=480, fps=15):
 
         self.capL = VideoCapture(cam_id_l, wight, height, fps)
         self.capR = VideoCapture(cam_id_r, wight, height, fps)

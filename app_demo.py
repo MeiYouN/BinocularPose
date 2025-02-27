@@ -6,6 +6,7 @@ from BinocularPose.models.yolo.yolo_det import Yolo_Det
 from BinocularPose.mytools.json_file import JsonFile
 from BinocularPose.triangulate import SimpleTriangulate
 from BinocularPose.mytools.load_para import load_cameras, load_yml
+from BinocularPose.mytools.file_utils import mkout
 from BinocularPose.visualize.plot3d import vis_plot
 from BinocularPose.models.mymmpose.mymmpose import MyMMP
 
@@ -40,11 +41,12 @@ class Timer:
 
 
 def main():
-    cameras = load_yml('.\demo_data\demo2')
-    folder_path = "./demo_data/demo2/v1080"
-    save_path = './run/demo2'
-    left_video = folder_path + "/01.mp4"
-    right_video = folder_path + "/02.mp4"
+    # cameras = load_yml('demo_data/pose2/p10')
+    cameras = load_yml('demo_data/pose3/p1')
+    folder_path = "demo_data/pose3/cyl/kualanbu"
+    save_path = folder_path
+    left_video = folder_path + "/videos/001.mp4"
+    right_video = folder_path + "/videos/002.mp4"
     # left_video = 0
     # right_video = 1
     capL = cv2.VideoCapture(left_video)
@@ -55,7 +57,7 @@ def main():
     model = MyMMP('BinocularPose/models/mymmpose')
     triangulate = SimpleTriangulate()
     vis = vis_plot()
-    yolo = Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt')
+    # yolo = Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt')
     timer = Timer()
 
     jf = JsonFile(folder_path, save_path)
@@ -73,8 +75,8 @@ def main():
         keypoints3d = None
         posekeypointsl = model(framel, None)
         posekeypointsr = model(framer, None)
-        print(posekeypointsl)
-        print(posekeypointsr)
+        # print(posekeypointsl)
+        # print(posekeypointsr)
 
         if posekeypointsl is not None and posekeypointsr is not None:
             # print(bbox)

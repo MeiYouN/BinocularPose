@@ -9,7 +9,7 @@ from BinocularPose.camera.VideoCapture import StereoCamera
 
 
 
-def capture(cam_id_l, cam_id_r, save_dir, frameSize=(2048, 1536), fps=20):
+def capture(cam_id_l, cam_id_r, save_dir, frameSize=(2048, 1536), fps=15):
 
     dir01 = save_dir + '/images/01'
     dir02 = save_dir + '/images/02'
@@ -44,18 +44,19 @@ def capture(cam_id_l, cam_id_r, save_dir, frameSize=(2048, 1536), fps=20):
     cv2.destroyAllWindows()
 
 def main():
-    # cam_id_l = 1
-    # cam_id_r = 0
-    cam_id_l = './demo_data/demo2/v1080/01.mp4'
-    cam_id_r = './demo_data/demo2/v1080/02.mp4'
-    dir_path = './demo_data/demo2/'
-    print(1)
-    # capture(cam_id_l,cam_id_r,dir_path)
+    cam_id_l = 1
+    cam_id_r = 0
+    # cam_id_l = './demo_data/demo2/v1080/01.mp4'
+    # cam_id_r = './demo_data/demo2/v1080/02.mp4'
+    # dir_path = './demo_data/lyy/test'
+    dir_path = './demo_data/pose3/cxw/xuanzhuanwendingxing'
+    capture(cam_id_l,cam_id_r,dir_path)
+
     print(2)
-    # extract_video(dir_path, 4)s
-    det_board(dir_path, (6,4), 0.1)
+    # extract_video(dir_path, 4)
+    # det_board(dir_path, (7,5), 0.1)
     print(3)
-    calib_extri(dir_path, 'demo_data/demo2/intri.yml',1)
+    # calib_extri(dir_path, './demo_data/demo3/intri.yml',2)
     print(4)
 
 if __name__ == '__main__':
