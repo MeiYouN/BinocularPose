@@ -16,16 +16,16 @@ class JsonFile:
         'pose_data': [],
     }
 
-    def __init__(self,folder_path ,save_path, fps=0):
-        current_datetime = datetime.now()
-        self.save_path =  os.path.join(save_path, f"run_{current_datetime.strftime('%Y%m%d%H%M%S')}.json")
-        self.data['datetime'] = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
-        self.data['folder_path'] = folder_path
-        self.data['fps'] = fps
-        self.index = 0
-        # self.data_queue = queue.Queue()
-        # self.save_thread = threading.Thread(target=self._save_loop, daemon=True)
-        # self.save_thread.start()
+    def __init__(self, folder_path=None, save_path=None, fps=0):
+        if save_path is not None:
+            current_datetime = datetime.now()
+            self.save_path =  os.path.join(save_path, f"run_{current_datetime.strftime('%Y%m%d%H%M%S')}.json")
+            self.data['datetime'] = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
+            self.data['folder_path'] = folder_path
+            self.data['fps'] = fps
+            self.index = 0
+        else:
+            pass
 
     def update(self, pose_data=None):
         isvis = True
@@ -52,3 +52,11 @@ class JsonFile:
     def save(self):
         with open(self.save_path, "w", encoding="utf-8") as fp:
             json.dump(self.data, fp, indent=4)
+
+    def load(self, fp):
+        with open(fp, "r", encoding="utf-8") as fp:
+            self.data = json.load(fp)
+            return self.data
+
+    def get_2dpose_data(self):
+        return self.data
