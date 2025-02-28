@@ -5,6 +5,9 @@ import queue
 import threading
 from typing import List, Tuple
 
+from BinocularPose.camera.MultiCamera import MultiCamera
+
+
 def dual_camera_recording():
     # 初始化参数
     camera_ids = [0, 1]          # 使用两个摄像头

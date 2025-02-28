@@ -137,6 +137,7 @@ class MultiCamera:
         """
         cv2.namedWindow('Multi-Camera Preview')
         fps_counter = 0
+        last_time = 0
         while self.preview_running:
             frames = []
             # 获取所有摄像头帧（线程安全）
@@ -160,7 +161,7 @@ class MultiCamera:
             fps_counter += 1
             if current_time - last_time >= 1.0:
                 fps = fps_counter / (current_time - last_time)
-                cv2.putText(combined, f"FPS: {fps:.1f}", ...)
+                # cv2.putText(combined, f"FPS: {fps:.1f}", ...)
                 fps_counter = 0
                 last_time = current_time
 
