@@ -1,4 +1,6 @@
 import os
+import queue
+import time
 from typing import List,Tuple
 
 import cv2
@@ -26,6 +28,8 @@ def sync_frame_capture(
     """
     counter = 0
     multi_cam = None
+    key_events = queue.Queue()  # 新增事件队列
+
     try:
         # 参数校验
         if not camera_ids:
@@ -43,25 +47,36 @@ def sync_frame_capture(
         # 创建保存目录
         os.makedirs(save_path, exist_ok=True)
 
-        # 启动可视化预览
-        multi_cam.start_preview(scale=0.5)
+        # 启动带事件回调的可视化预览
+        def preview_callback(key):
+            """ 将按键事件放入队列 """
+            key_events.put(key)
+
+        multi_cam.start_preview(
+            scale=0.5,
+            key_callback=preview_callback  # 新增回调参数
+        )
+
         print("操作指南：\n[s] 保存当前帧\n[q/ESC] 退出")
 
         while True:
-            # 非阻塞按键检测
-            key = cv2.waitKey(1) & 0xFF
-            if key in (27, ord('q')):  # ESC或q键
-                break
-            elif key == ord('s'):
-                # 保存所有摄像头画面
-                base_name = f"frame_{counter:04d}"
-                multi_cam.save_frames_all(
-                    base_name=base_name,
-                    base_path=save_path,
-                    img_type="jpg"
-                )
-                print(f"已保存第 {counter} 组画面")
-                counter += 1
+            try:
+                # 从队列获取按键事件（非阻塞）
+                key = key_events.get_nowait()
+                if key in (27, ord('q')):
+                    break
+                elif key == ord('s'):
+                    # 保存所有摄像头画面
+                    base_name = f"frame_{counter:04d}"
+                    multi_cam.save_frames_all(
+                        base_name=base_name,
+                        base_path=save_path,
+                        img_type="jpg"
+                    )
+                    print(f"已保存第 {counter} 组画面")
+                    counter += 1
+            except queue.Empty:
+                time.sleep(0.01)  # 避免CPU空转
         print(f"共保存{counter}张图片")
 
         return True

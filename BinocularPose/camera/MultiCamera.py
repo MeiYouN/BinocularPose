@@ -36,6 +36,7 @@ class MultiCamera:
         self.grid_layout = (1, len(self.cameras))  # 默认横向排列
         self.preview_thread = None
         self.preview_running = False  # 新增预览状态标志
+        self.key_callback = None  # 新增回调函数引用
 
     def _init_cameras(self):
         """初始化所有摄像头设备"""
@@ -112,10 +113,13 @@ class MultiCamera:
         """设置显示缩放比例"""
         self.preview_scale = scale
 
-    def start_preview(self, layout: tuple = None, scale: float = None):
+    def start_preview(self, layout: tuple = None, scale: float = None, key_callback=None):
         """
         启动非阻塞预览线程
         """
+        """ 新增key_callback参数 """
+        self.key_callback = key_callback
+
         if self.preview_running:
             return
 
@@ -162,11 +166,15 @@ class MultiCamera:
 
             # 显示画面
             cv2.imshow('Multi-Camera Preview', combined)
-
             # 非阻塞等待按键（1ms）
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord('q'):
-                self.stop_preview()
+            key = cv2.waitKey(1)
+            # 触发回调函数
+            if key != -1 and self.key_callback:
+                self.key_callback(key)
+
+            # 退出检测保留
+            if not self.preview_running:
+                break
 
         cv2.destroyWindow('Multi-Camera Preview')
 
