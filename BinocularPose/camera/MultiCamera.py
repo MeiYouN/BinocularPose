@@ -1,183 +1,150 @@
 import os
 import time
+from datetime import datetime
+from queue import Queue
 
 import cv2
 import threading
 import numpy as np
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from BinocularPose.camera.Camera import Camera
 
 
 class MultiCamera:
-    def __init__(self, camera_ids: List[int] = None, width: int = 1280,
-                 height: int = 720, fps: int = 30):
+    def __init__(self,
+                 camera_ids: List[int] = [0, 1],
+                 resolution: Tuple[int, int] = (1280, 720),
+                 fps: int = 30,
+                 work_dir: str = "workspace"):
         """
-        初始化多摄像头控制器
-        :param camera_ids: 摄像头ID列表（默认[0, 1]）
-        :param width: 统一设置画面宽度
-        :param height: 统一设置画面高度
-        :param fps: 统一设置帧率
+        多摄像头控制器
+        :param camera_ids: 摄像头ID列表
+        :param resolution: 分辨率 (宽, 高)
+        :param fps: 帧率
+        :param work_dir: 工作根目录
         """
-        self.camera_ids = camera_ids or [0, 1]
-        self.base_width = width
-        self.base_height = height
-        self.base_fps = fps
+        # 硬件控制部分
+        self.cameras = self._init_cameras(camera_ids, resolution, fps)
+        self.running = True
 
-        # 创建摄像头实例字典
-        self.cameras: Dict[int, Camera] = {}
-        self.lock = threading.Lock()
+        # 文件管理
+        self.work_dir = os.path.abspath(work_dir)
+        self._create_dirs()
+        self.save_counter = 0
+        self.record_counter = 0
+        self.is_recording = False
 
-        # 初始化所有摄像头
-        self._init_cameras()
+        # 可视化控制
+        self.event_queue = Queue()
+        self.preview_thread = threading.Thread(target=self._preview_loop, daemon=True)
+        self.preview_thread.start()
 
-        # 可视化相关参数
-        self.preview_scale = 0.5
-        self.grid_layout = (1, len(self.cameras))  # 默认横向排列
-        self.preview_thread = None
-        self.preview_running = False  # 新增预览状态标志
-        self.key_callback = None  # 新增回调函数引用
-
-    def _init_cameras(self):
-        """初始化所有摄像头设备"""
-        for cam_id in self.camera_ids:
+    def _init_cameras(self, ids, res, fps) -> Dict[int, Camera]:
+        """初始化摄像头实例"""
+        cams = {}
+        for cam_id in ids:
             try:
-                cam = Camera(
-                    device_index=cam_id,
-                    width=self.base_width,
-                    height=self.base_height,
-                    fps=self.base_fps
-                )
-                self.cameras[cam_id] = cam
+                cam = Camera(cam_id, res[0], res[1], fps)
+                cams[cam_id] = cam
                 print(f"摄像头 {cam_id} 初始化成功")
             except Exception as e:
                 print(f"摄像头 {cam_id} 初始化失败: {str(e)}")
+        return cams
 
-    def start_recording_all(self, folder_name: str, base_path: str):
-        """
-        开始同步录制所有摄像头
-        :param folder_name: 存储文件夹名称
-        :param base_path: 根目录路径
-        """
+    def _create_dirs(self):
+        """创建标准目录结构"""
+        self.image_dir = os.path.join(self.work_dir, "images")
+        self.video_dir = os.path.join(self.work_dir, "videos")
+        os.makedirs(self.image_dir, exist_ok=True)
+        os.makedirs(self.video_dir, exist_ok=True)
+
+    def _preview_loop(self):
+        """可视化与事件处理主循环"""
+        cv2.namedWindow("Camera Controller", cv2.WINDOW_NORMAL)
+
+        while self.running:
+            # 获取所有摄像头画面
+            frames = []
+            for cam_id in sorted(self.cameras.keys()):
+                frame = self.cameras[cam_id].read()
+                if frame is not None:
+                    frames.append(cv2.resize(frame, (640, 480)))  # 统一缩放尺寸
+
+            # 拼接画面（2x1布局）
+            if len(frames) >= 2:
+                combined = np.vstack(frames)
+                self._draw_hud(combined)
+                cv2.imshow("Camera Controller", combined)
+
+            # 按键检测
+            key = cv2.waitKey(1) & 0xFF
+            if key in (27, ord('q')):  # ESC/q退出
+                self.shutdown()
+            elif key == ord('s'):  # 保存快照
+                self._save_snapshots()
+            elif key == ord('r'):  # 录制控制
+                self._toggle_recording()
+
+        cv2.destroyAllWindows()
+
+    def _draw_hud(self, canvas):
+        """绘制状态信息"""
+        status = [
+            f"Record Counter: {self.record_counter}",
+            f"Save Counter: {self.save_counter}",
+            f"Recording: {'ON' if self.is_recording else 'OFF'}"
+        ]
+        y = 30
+        for text in status:
+            cv2.putText(canvas, text, (10, y),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+            y += 40
+
+    def _save_snapshots(self):
+        """保存当前帧到images目录"""
+        self.save_counter += 1
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         for cam_id, camera in self.cameras.items():
-            save_path = os.path.join(base_path, folder_name)
-            os.makedirs(save_path, exist_ok=True)
-            filename = f"cam_{cam_id}.mp4"
-            camera.start_recording(filename, save_path)
+            path = os.path.join(self.image_dir, f"cam{cam_id}")
+            os.makedirs(path, exist_ok=True)
+            camera.save_frame(
+                f"snap_{self.save_counter:03d}_{timestamp}",
+                path,
+                "png"
+            )
+        print(f"已保存快照 #{self.save_counter}")
 
-    def stop_recording_all(self):
-        """停止所有摄像头录制"""
+    def _toggle_recording(self):
+        """切换录制状态"""
+        if self.is_recording:
+            self._stop_recording()
+        else:
+            self._start_recording()
+
+    def _start_recording(self):
+        """开始录制视频到videos目录"""
+        self.record_counter += 1
+        folder = os.path.join(self.video_dir, f"recording_{self.record_counter:03d}")
+        for cam_id, camera in self.cameras.items():
+            camera.start_recording(f"cam{cam_id}.mp4", folder)
+        self.is_recording = True
+        print(f"开始录制 #{self.record_counter}")
+
+    def _stop_recording(self):
+        """停止录制"""
         for camera in self.cameras.values():
             camera.stop_recording()
+        self.is_recording = False
+        print(f"停止录制 #{self.record_counter}")
 
-    def save_frames_all(self, base_name: str, base_path: str, img_type="jpg"):
-        """
-        保存所有摄像头当前帧
-        :param base_name: 图片基础名称
-        :param base_path: 根目录路径
-        :param img_type: 图片格式
-        """
-        for cam_id, camera in self.cameras.items():
-            cam_path = os.path.join(base_path, f"cam_{cam_id}")
-            camera.save_frame(base_name, cam_path, img_type)
-
-    def get_all_status(self) -> Dict[int, Dict]:
-        """获取所有摄像头状态信息"""
-        return {
-            cam_id: {
-                **camera.get_camera_params(),
-                "is_alive": camera.running
-            }
-            for cam_id, camera in self.cameras.items()
-        }
-
-    def visualize(self, layout: tuple = None, scale: float = None):
-        """
-        实时显示多摄像头画面
-        :param layout: 排列布局 (rows, cols)
-        :param scale: 显示缩放比例
-        """
-        self.start_preview(layout, scale)
-
-    def close_all(self):
-        """关闭所有摄像头"""
+    def shutdown(self):
+        """安全关闭系统"""
+        self.running = False
+        self._stop_recording()
         for camera in self.cameras.values():
             camera.close()
-        print("所有摄像头已关闭")
-
-    def set_display_layout(self, rows: int, cols: int):
-        """设置画面排列布局"""
-        self.grid_layout = (rows, cols)
-
-    def set_display_scale(self, scale: float):
-        """设置显示缩放比例"""
-        self.preview_scale = scale
-
-    def start_preview(self, layout: tuple = None, scale: float = None, key_callback=None):
-        """
-        启动非阻塞预览线程
-        """
-        """ 新增key_callback参数 """
-        self.key_callback = key_callback
-
-        if self.preview_running:
-            return
-
-        self.preview_running = True
-        self.preview_thread = threading.Thread(
-            target=self._preview_loop,
-            args=(layout, scale),
-            daemon=True
-        )
-        self.preview_thread.start()
-
-    def _preview_loop(self, layout, scale):
-        """
-        独立线程运行的可视化循环
-        """
-        cv2.namedWindow('Multi-Camera Preview')
-        fps_counter = 0
-        last_time = 0
-        while self.preview_running:
-            frames = []
-            # 获取所有摄像头帧（线程安全）
-            for cam_id in sorted(self.cameras.keys()):
-                with self.cameras[cam_id].lock:
-                    frame = self.cameras[cam_id].latest_frame
-                    if frame is not None:
-                        h, w = frame.shape[:2]
-                        new_size = (int(w * scale), int(h * scale))
-                        resized = cv2.resize(frame.copy(), new_size)
-                        frames.append(resized)
-
-            if len(frames) == 0:
-                continue
-
-            # 动态计算布局
-            rows, cols = self._calculate_layout(layout, len(frames))
-            combined = self._arrange_frames(frames, rows, cols)
-
-            current_time = time.time()
-            fps_counter += 1
-            if current_time - last_time >= 1.0:
-                fps = fps_counter / (current_time - last_time)
-                # cv2.putText(combined, f"FPS: {fps:.1f}", ...)
-                fps_counter = 0
-                last_time = current_time
-
-            # 显示画面
-            cv2.imshow('Multi-Camera Preview', combined)
-            # 非阻塞等待按键（1ms）
-            key = cv2.waitKey(1)
-            # 触发回调函数
-            if key != -1 and self.key_callback:
-                self.key_callback(key)
-
-            # 退出检测保留
-            if not self.preview_running:
-                break
-
-        cv2.destroyWindow('Multi-Camera Preview')
+        print("系统资源已释放")
 
     def stop_preview(self):
         """停止预览"""
