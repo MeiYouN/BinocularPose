@@ -8,14 +8,16 @@ from typing import List, Tuple
 from BinocularPose.camera.MultiCamera import MultiCamera
 
 
-def dual_camera_recording():
+def dual_camera_recording(path):
     # 初始化参数
     camera_ids = [0, 1]          # 使用两个摄像头
     resolution = (1280, 720)     # 分辨率设置
     fps = 30                     # 帧率
-    save_folder = "dual_record"  # 存储目录
-    video_dir = "./videos"       # 视频保存路径
+    save_folder = path  # 存储目录
+    video_dir = path+"/videos"       # 视频保存路径
+    img_dir = path+"/images"
     key_events = queue.Queue()   # 按键事件队列
+    video_flag = False
 
     try:
         # 创建多摄像头控制器
@@ -30,12 +32,6 @@ def dual_camera_recording():
         def key_handler(key):
             key_events.put(key)
 
-        # 启动视频录制
-        controller.start_recording_all(
-            folder_name=save_folder,
-            base_path=video_dir
-        )
-
         # 启动可视化预览（左右布局）
         controller.start_preview(
             layout=(1, 2),  # 1行2列
@@ -47,8 +43,12 @@ def dual_camera_recording():
         ===== 操作说明 =====
         [s] 保存当前帧截图
         [q] 停止录制并退出
+        [r] 开始或停止视频录制
         ===================
         """)
+
+        img_count = 0
+        video_count = 0
 
         # 主控制循环
         running = True
@@ -60,13 +60,24 @@ def dual_camera_recording():
                     running = False
                 elif key == ord('s'):
                     # 保存当前帧（带时间戳）
-                    timestamp = time.strftime("%Y%m%d_%H%M%S")
                     controller.save_frames_all(
-                        base_name=f"snapshot_{timestamp}",
-                        base_path="./screenshots",
-                        img_type="png"
+                        base_name=f"{img_count}",
+                        base_path=img_dir,
+                        img_type="jpg"
                     )
-                    print(f"已保存时间点 {timestamp} 的截图")
+                    print(f"已保存 {img_count}.jpg")
+                elif key == ord('r'):
+                    if video_flag:
+                        video_flag = False
+                        # 启动视频录制
+                        controller.start_recording_all(
+                            folder_name=f"video_{video_count}",
+                            base_path=video_dir
+                        )
+                    else:
+                        video_flag = True
+                        controller.stop_recording_all()
+
             except queue.Empty:
                 time.sleep(0.01)  # 避免CPU空转
 
@@ -78,19 +89,17 @@ def dual_camera_recording():
     finally:
         # 清理资源
         if 'controller' in locals():
-            print("正在停止录制...")
-            controller.stop_recording_all()
+            if video_flag:
+                controller.stop_recording_all()
             print("正在关闭摄像头...")
             controller.close_all()
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     # 创建必要目录
-    os.makedirs("./videos", exist_ok=True)
-    os.makedirs("./screenshots", exist_ok=True)
-
+    path = "./demo_date/new_test"
     # 运行主程序
-    if dual_camera_recording():
+    if dual_camera_recording(path):
         print("程序正常退出")
     else:
         print("程序异常终止")
