@@ -110,6 +110,6 @@ if __name__ == "__main__":
         print("程序异常终止")
 
     # 展示保存内容
-    print("\n录制内容已保存至：")
+    print(f"\n录制内容已保存至：{path}")
     # print(f"视频文件：{os.path.abspath(video_dir)}/{save_folder}/")
     # print(f"截图文件：{os.path.abspath('./screenshots')}/")
