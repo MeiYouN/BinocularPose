@@ -40,7 +40,7 @@ class BaseCamera:
             return
 
         # 初始化摄像头
-        self.cap = cv2.VideoCapture(self.device_index)
+        self.cap = cv2.VideoCapture(self.device_index, cv2.CAP_DSHOW)
         if not self.cap.isOpened():
             raise RuntimeError(f"无法打开摄像头设备 {self.device_index}")
 
