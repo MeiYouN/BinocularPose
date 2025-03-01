@@ -65,18 +65,22 @@ def dual_camera_recording(path):
                         base_path=img_dir,
                         img_type="jpg"
                     )
+                    img_count += 1
                     print(f"已保存 {img_count}.jpg")
                 elif key == ord('r'):
                     if video_flag:
                         video_flag = False
+                        controller.stop_recording_all()
+                        print(f"视频{video_count}录制结束")
+                        video_count += 1
+                    else:
+                        video_flag = True
                         # 启动视频录制
                         controller.start_recording_all(
                             folder_name=f"video_{video_count}",
                             base_path=video_dir
                         )
-                    else:
-                        video_flag = True
-                        controller.stop_recording_all()
+                        print(f"视频{video_count}录制开始")
 
             except queue.Empty:
                 time.sleep(0.01)  # 避免CPU空转
@@ -92,6 +96,7 @@ def dual_camera_recording(path):
             if video_flag:
                 controller.stop_recording_all()
             print("正在关闭摄像头...")
+            controller.stop_preview()
             controller.close_all()
         cv2.destroyAllWindows()
 
