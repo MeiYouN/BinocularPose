@@ -93,18 +93,21 @@ def sync_frame_capture(
         cv2.destroyAllWindows()
 
 
-def main():
-    cam_id_l = 1
-    cam_id_r = 0
-    dir_path = './demo/images/'
-    inrri_path = './demo_data/demo2/intri.yml'
-    print(1)
-    sync_frame_capture([cam_id_l,cam_id_r],dir_path)
-    print(2)
+def cal_interface(dir_path, intri_path, id_list=None):
+    if id_list is None:
+        id_list = [0, 1]
+
+    print("图像获取开始")
+    sync_frame_capture(id_list,dir_path)
+    print("开始检测角点")
     det_board(dir_path, (7,5), 0.1)
-    print(3)
-    calib_extri(dir_path, inrri_path, 1)
-    print(4)
+    print("开始计算")
+    calib_extri(dir_path, intri_path, 1)
+    print("结束")
 
 if __name__ == '__main__':
-    main()
+
+    dir_path = './demo/intri/'
+    intri_path = './intri/intri.yml'
+
+    cal_interface(dir_path, intri_path)

@@ -78,7 +78,7 @@ class MultiCamera:
         :param img_type: 图片格式
         """
         for cam_id, camera in self.cameras.items():
-            cam_path = os.path.join(base_path, f"cam_{cam_id}")
+            cam_path = os.path.join(base_path, f"{cam_id:02d}")
             camera.save_frame(base_name, cam_path, img_type)
 
     def get_all_status(self) -> Dict[int, Dict]:
