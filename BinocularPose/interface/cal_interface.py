@@ -16,7 +16,7 @@ from BinocularPose.camera.VideoCapture import StereoCamera
 
 def sync_frame_capture(
     camera_ids: List[int] = None,
-    save_path: str = "./demo/images",
+    save: str = "./demo/",
     image_size: Tuple[int, int] = (2048, 1536)
 ) -> bool:
     """
@@ -45,6 +45,7 @@ def sync_frame_capture(
         )
 
         # 创建保存目录
+        save_path = save + 'images'
         os.makedirs(save_path, exist_ok=True)
 
         # 启动带事件回调的可视化预览
@@ -96,14 +97,14 @@ def main():
     cam_id_l = 1
     cam_id_r = 0
     dir_path = './demo/images/'
+    inrri_path = './demo_data/demo2/intri.yml'
     print(1)
     sync_frame_capture([cam_id_l,cam_id_r],dir_path)
     print(2)
-    # extract_video(dir_path, 4)
-    # det_board(dir_path, (6,4), 0.1)
-    # print(3)
-    # calib_extri(dir_path, 'demo_data/demo2/intri.yml',1)
-    # print(4)
+    det_board(dir_path, (7,5), 0.1)
+    print(3)
+    calib_extri(dir_path, inrri_path, 1)
+    print(4)
 
 if __name__ == '__main__':
     main()

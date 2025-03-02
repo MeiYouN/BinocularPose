@@ -245,7 +245,7 @@ def parser_args():
 
     return parser.parse_args()
 
-def det_board(path, pattern, grid, seq=False):
+def det_board(path, pattern, grid, seq=True):
     # args = parser_args()
     import argparse
     args_path = path
@@ -255,7 +255,7 @@ def det_board(path, pattern, grid, seq=False):
     args_seq = seq
     args_image = 'images'
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mp', type=int, default=4)
+    parser.add_argument('--mp', type=int, default=1)
     parser.add_argument('--overwrite3d', action='store_true')
     parser.add_argument('--ext', type=str, default='.jpg', choices=['.jpg', '.png'])
     parser.add_argument('--axis', type=str, default='yx')
