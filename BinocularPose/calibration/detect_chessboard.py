@@ -180,7 +180,7 @@ def _detect_by_search(path, image, out, pattern, sub, args):
             proposals.append((mid, right))
 
 def detect_chessboard_sequence(path, out, pattern, gridSize, args, image="images"):
-    create_chessboard(path, image, pattern, gridSize, ext=args.ext, overwrite=args.overwrite3d)
+    create_chessboard(path, image, pattern, gridSize, ext=args.ext, overwrite=args.overwrite3d, axis=args.axis)
     subs = sorted(os.listdir(join(path, image)))
     subs = [s for s in subs if os.path.isdir(join(path, image, s))]
     if len(subs) == 0:
@@ -262,7 +262,7 @@ def det_board(path, pattern, grid, seq=True):
     args = parser.parse_args()
 
     if args_seq:
-        detect_chessboard_sequence(args_path, args_out, pattern=args_pattern, gridSize=args_grid, args=args, image=args.image)
+        detect_chessboard_sequence(args_path, args_out, pattern=args_pattern, gridSize=args_grid, args=args)
     else:
         detect_chessboard(args_path, args_image, args_out, pattern=args_pattern, gridSize=args_grid, args=args)
 
