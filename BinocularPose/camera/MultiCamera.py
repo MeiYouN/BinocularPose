@@ -10,8 +10,8 @@ from BinocularPose.camera.Camera import Camera
 
 
 class MultiCamera:
-    def __init__(self, camera_ids: List[int] = None, width: int = 1280,
-                 height: int = 720, fps: int = 30):
+    def __init__(self, camera_ids: List[int] = None, width: int = 2048,
+                 height: int = 1536, fps: int = 30):
         """
         初始化多摄像头控制器
         :param camera_ids: 摄像头ID列表（默认[0, 1]）
@@ -37,6 +37,7 @@ class MultiCamera:
         self.preview_thread = None
         self.preview_running = False  # 新增预览状态标志
         self.key_callback = None  # 新增回调函数引用
+        self.frames = None
 
     def _init_cameras(self):
         """初始化所有摄像头设备"""
@@ -131,6 +132,19 @@ class MultiCamera:
         )
         self.preview_thread.start()
 
+    def _get_frames(self):
+        self.frames = []
+        # 获取所有摄像头帧（线程安全）
+        for cam_id in sorted(self.cameras.keys()):
+            with self.cameras[cam_id].lock:
+                frame = self.cameras[cam_id].latest_frame
+                self.frames.append(frame)
+
+        return self.frames
+
+    def get_frames(self):
+        return self.frames
+
     def _preview_loop(self, layout, scale):
         """
         独立线程运行的可视化循环
@@ -139,23 +153,21 @@ class MultiCamera:
         fps_counter = 0
         last_time = 0
         while self.preview_running:
-            frames = []
-            # 获取所有摄像头帧（线程安全）
-            for cam_id in sorted(self.cameras.keys()):
-                with self.cameras[cam_id].lock:
-                    frame = self.cameras[cam_id].latest_frame
-                    if frame is not None:
-                        h, w = frame.shape[:2]
-                        new_size = (int(w * scale), int(h * scale))
-                        resized = cv2.resize(frame.copy(), new_size)
-                        frames.append(resized)
+            frames = self._get_frames()
+            resized_frames = []
+            for frame in frames:
+                if frame is not None:
+                    h, w = frame.shape[:2]
+                    new_size = (int(w * scale), int(h * scale))
+                    resized = cv2.resize(frame.copy(), new_size)
+                    resized_frames.append(resized)
 
-            if len(frames) == 0:
+            if len(resized_frames) == 0:
                 continue
 
             # 动态计算布局
-            rows, cols = self._calculate_layout(layout, len(frames))
-            combined = self._arrange_frames(frames, rows, cols)
+            rows, cols = self._calculate_layout(layout, len(resized_frames))
+            combined = self._arrange_frames(resized_frames, rows, cols)
 
             current_time = time.time()
             fps_counter += 1
