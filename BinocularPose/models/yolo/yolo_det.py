@@ -6,13 +6,21 @@ class Yolo_Det:
     def __init__(self, model='./weights/yolo11n.pt'):
         self.model = YOLO(model)
 
-    def __call__(self, img):
-        results = self.model.predict(img,classes=[0])
-        boxe = results[0].boxes.xyxy.cpu().numpy()
-        if len(boxe) == 0 :
+    def ret_all_box(self,results):
+        boxes = []
+        for res in results:
+            boxe = res.boxes.xyxy.cpu().numpy()
+            boxes.append(boxe)
+
+        return boxes
+
+    def __call__(self, images):
+        results = self.model.predict(images,classes=[0],half=True)
+        # boxe = results[0].boxes.xyxy.cpu().numpy()
+        if len(results) == 0 :
             return None
         else:
-            return boxe
+            return self.ret_all_box(results)
 
 
 def train():

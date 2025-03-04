@@ -205,8 +205,8 @@ def parse_args_call():
 class MyMMP:
     def __init__(self, model_path):
         register_all_modules()
-        config_file = os.path.join(model_path, 'rtmo-m_16xb16-600e_body7-640x640.py')
-        checkpoint_file = os.path.join(model_path, 'rtmo-m_16xb16-600e_body7-640x640-39e78cc4_20231211.pth')
+        config_file = os.path.join(model_path, 'td-hm_ViTPose-large_8xb64-210e_coco-256x192.py')
+        checkpoint_file = os.path.join(model_path, 'td-hm_ViTPose-large_8xb64-210e_coco-256x192-53609f55_20230314.pth')
         self.model = init_model(config_file, checkpoint_file, device='cuda:0')  # or device='cuda:0'
         # self.model = init_model(**self.init_args)
 
