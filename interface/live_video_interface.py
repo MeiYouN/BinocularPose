@@ -49,7 +49,7 @@ class LiveVideo:
             key_callback=key_handler
         )
 
-    def start_recording(self,pose_name = None, live_pose = False):
+    def start_recording(self,pose_name = None):
         """开始同步录制所有摄像头"""
         if self.is_recording:
             print("录制正在进行中")

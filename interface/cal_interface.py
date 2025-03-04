@@ -6,22 +6,20 @@ from typing import List,Tuple
 import cv2
 
 from BinocularPose.calibration.calib_extri import calib_extri
-from BinocularPose.calibration.extract_video import extract_video
 from BinocularPose.calibration.detect_chessboard import det_board
 from BinocularPose.camera.MultiCamera import MultiCamera
-from BinocularPose.camera.VideoCapture import StereoCamera
 
 
 
 
 def sync_frame_capture(
-    camera_ids: List[int] = None,
-    save: str = "./demo/",
+    camera_model: MultiCamera = None,
+    save: str = "./demo/cal/",
     image_size: Tuple[int, int] = (2048, 1536)
 ) -> bool:
     """
     多摄像头同步拍摄功能
-    :param camera_ids: 摄像头ID列表
+    :param camera_model: 摄像头模块
     :param save_path: 图片保存根目录
     :param image_size: 图像分辨率 (width, height)
     :return: (运行状态, 保存数量) 或 (False, 错误信息)
@@ -32,17 +30,15 @@ def sync_frame_capture(
 
     try:
         # 参数校验
-        if not camera_ids:
+        if not camera_model:
             camera_ids = [0, 1]
-        if not isinstance(image_size, tuple) or len(image_size) != 2:
-            raise ValueError("图像尺寸参数格式错误，应为(width, height)元组")
-
-        # 创建多摄像头控制器
-        multi_cam = MultiCamera(
-            camera_ids=camera_ids,
-            width=image_size[0],
-            height=image_size[1]
-        )
+            multi_cam = MultiCamera(
+                camera_ids=camera_ids,
+                width=image_size[0],
+                height=image_size[1]
+            )
+        else:
+            multi_cam = camera_model
 
         # 创建保存目录
         save_path = save + 'images'
@@ -93,17 +89,15 @@ def sync_frame_capture(
         cv2.destroyAllWindows()
 
 
-def cal_interface(dir_path, intri_path, id_list=None):
-    if id_list is None:
-        id_list = [0, 1]
+def cal_interface(dir_path, intri_path, cams=None):
 
     print("图像获取开始")
-    sync_frame_capture(id_list,dir_path)
+    sync_frame_capture(cams,dir_path)
     print("开始检测角点")
     det_board(dir_path, (7,5), 0.1)
     print("开始计算")
     calib_extri(dir_path, intri_path, 1)
-    print("结束")
+    print("标定结束")
 
 if __name__ == '__main__':
 

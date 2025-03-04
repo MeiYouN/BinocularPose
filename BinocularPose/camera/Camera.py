@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 import cv2
 import threading
@@ -6,7 +7,7 @@ import time
 
 
 class BaseCamera:
-    def __init__(self, device_index=0, width=None, height=None, fps=None):
+    def __init__(self, device_index:Union[int,str]=0, width=None, height=None, fps=None):
         """
         初始化摄像头配置参数
         :param device_index: 摄像头设备索引
@@ -40,7 +41,11 @@ class BaseCamera:
             return
 
         # 初始化摄像头
-        self.cap = cv2.VideoCapture(self.device_index, cv2.CAP_DSHOW)
+        if type(self.device_index) == int:
+            self.cap = cv2.VideoCapture(self.device_index, cv2.CAP_DSHOW)
+        else:
+            self.cap = cv2.VideoCapture(self.device_index)
+
         if not self.cap.isOpened():
             raise RuntimeError(f"无法打开摄像头设备 {self.device_index}")
 
@@ -166,7 +171,7 @@ class BaseCamera:
 
 
 class Camera(BaseCamera):
-    def __init__(self, device_index=0, width=None, height=None, fps=None):
+    def __init__(self, device_index:Union[int,str]=0, width=None, height=None, fps=None):
         super().__init__(device_index, width, height, fps)
         # 视频录制相关参数
         self.recording_flag = False

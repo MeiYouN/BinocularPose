@@ -4,13 +4,13 @@ import time
 import cv2
 import threading
 import numpy as np
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from BinocularPose.camera.Camera import Camera
 
 
 class MultiCamera:
-    def __init__(self, camera_ids: List[int] = None, width: int = 2048,
+    def __init__(self, camera_ids: List[Union[int,str]], width: int = 2048,
                  height: int = 1536, fps: int = 30):
         """
         初始化多摄像头控制器
@@ -92,7 +92,7 @@ class MultiCamera:
             for cam_id, camera in self.cameras.items()
         }
 
-    def visualize(self, layout: tuple = None, scale: float = None):
+    def visualize(self, layout: tuple = (1,2), scale: float = 0.5):
         """
         实时显示多摄像头画面
         :param layout: 排列布局 (rows, cols)
@@ -114,7 +114,7 @@ class MultiCamera:
         """设置显示缩放比例"""
         self.preview_scale = scale
 
-    def start_preview(self, layout: tuple = None, scale: float = None, key_callback=None):
+    def start_preview(self, layout: tuple=(1,2), scale: float = 0.5, key_callback=None):
         """
         启动非阻塞预览线程
         """
@@ -157,7 +157,8 @@ class MultiCamera:
             resized_frames = []
             for frame in frames:
                 if frame is not None:
-                    h, w = frame.shape[:2]
+                    # h, w = frame.shape[:2]
+                    w, h = self.base_width, self.base_height
                     new_size = (int(w * scale), int(h * scale))
                     resized = cv2.resize(frame.copy(), new_size)
                     resized_frames.append(resized)

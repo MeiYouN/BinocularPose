@@ -1,14 +1,10 @@
-import threading
-import queue
-import time
-from collections import deque
-from concurrent.futures import ThreadPoolExecutor
 
-import cv2
 import numpy as np
 
+from BinocularPose.camera.MultiCamera import MultiCamera
 from BinocularPose.models.mymmpose.mymmpose import MyMMP
 from BinocularPose.models.yolo.yolo_det import Yolo_Det
+from BinocularPose.mytools.load_para import load_yml
 from BinocularPose.triangulate import SimpleTriangulate
 from app_demo import Timer
 from interface.live_video_interface import LiveVideo
@@ -65,14 +61,29 @@ class ThreeDPoseProcess:
 
 
 if __name__ == '__main__':
+    # cameras = load_yml('demo_data/p2/')
+    # cameras = load_yml('demo_data/demo2')
+    folder_path = "../demo_data/demo2"
+    save_path = folder_path
+    left_video = folder_path + "/videos/01.mp4"
+    right_video = folder_path + "/videos/02.mp4"
 
     # 初始化处理系统
-    processor = ThreeDPoseProcess(
-        yolo_model=Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt'),
-        pose_model=MyMMP('BinocularPose/models/mymmpose')
-    )
+    # processor = ThreeDPoseProcess(
+    #     yolo_model=Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt'),
+    #     pose_model=MyMMP('BinocularPose/models/mymmpose')
+    # )
 
-    processor.run_process(frames, cameras)
+    # controller = MultiCamera(
+    #     camera_ids=[left_video, right_video],
+    #     width=2048,
+    #     height=1536,
+    #     fps=30,
+    # )
+    #
+    # controller.visualize()
+
+    # processor.run_process(frames, cameras)
 
 
 
