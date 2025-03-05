@@ -1,5 +1,6 @@
 import queue
 import threading
+import time
 from datetime import datetime
 import json
 import os
@@ -18,25 +19,26 @@ class JsonFile:
 
     def __init__(self, folder_path=None, save_path=None, fps=0):
         if save_path is not None:
-            current_datetime = datetime.now()
-            self.save_path =  os.path.join(save_path, f"run_{current_datetime.strftime('%Y%m%d%H%M%S')}.json")
-            self.data['datetime'] = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
-            self.data['folder_path'] = folder_path
-            self.data['fps'] = fps
-            self.index = 0
+            self.save_path = save_path
         else:
-            pass
+            current_datetime = datetime.now()
+            self.save_path = os.path.join(folder_path, f"run_{current_datetime.strftime('%Y%m%d%H%M%S')}.json")
 
-    def update(self, pose_data=None):
+        self.data['datetime'] = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
+        self.data['folder_path'] = folder_path
+        self.data['fps'] = fps
+        self.index = 0
+
+    def update(self, pose_data:np.ndarray):
         isvis = True
         self.index += 1
-        if pose_data is None:
-            pose_data = []
-            isvis = False
+        # if pose_data is None:
+        #     pose_data = []
+        #     isvis = False
         pose_data_node = {
             'id': self.index,
             'isvis': isvis,
-            'pose': pose_data,
+            'pose': pose_data.tolist(),
         }
 
         self.data['pose_data'].append(pose_data_node)
@@ -48,6 +50,7 @@ class JsonFile:
                 pose_data = self.data_queue.get()
                 self.data['pose_data'].append(pose_data)
                 self.save()
+            time.sleep(0.01)
 
     def save(self):
         with open(self.save_path, "w", encoding="utf-8") as fp:

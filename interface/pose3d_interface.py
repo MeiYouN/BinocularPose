@@ -13,10 +13,10 @@ from interface.live_video_interface import LiveVideo
 class ThreeDPoseProcess:
     def __init__(self, yolo_model, pose_model):
         self.frame_index = 0
-        self.video_model = LiveVideo(camera_ids=[0, 1],
-                               resolution=(2048, 1536),
-                               fps=30,
-                               work_dir="./demo")
+        # self.video_model = LiveVideo(camera_ids=[0, 1],
+        #                        resolution=(2048, 1536),
+        #                        fps=30,
+        #                        work_dir="./demo")
 
         # 绑定模型
         self.yolo = yolo_model

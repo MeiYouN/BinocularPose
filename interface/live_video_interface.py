@@ -88,20 +88,6 @@ class LiveVideo:
         print("系统资源已释放")
 
 
-live_video = LiveVideo(camera_ids=[0, 1],
-        resolution=(2048, 1536),
-        fps=30,
-        work_dir="./demo")
-
-def start_recording(pose_name = None, live_pose = False):
-    live_video.start_recording(pose_name, live_pose)
-
-def stop_recording(pose_name = None, live_pose = False):
-    live_video.stop_recording()
-
-def close():
-    live_video.close()
-
 # 使用示例
 if __name__ == "__main__":
     # 初始化双摄像头控制器

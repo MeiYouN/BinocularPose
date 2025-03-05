@@ -143,7 +143,9 @@ class MultiCamera:
         return self.frames
 
     def get_frames(self):
-        return self.frames
+        if self.preview_running:
+            return self.frames
+        return self._get_frames()
 
     def _preview_loop(self, layout, scale):
         """

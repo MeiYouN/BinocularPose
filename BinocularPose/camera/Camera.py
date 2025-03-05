@@ -43,14 +43,14 @@ class BaseCamera:
         # 初始化摄像头
         if type(self.device_index) == int:
             self.cap = cv2.VideoCapture(self.device_index, cv2.CAP_DSHOW)
-        else:
+        elif type(self.device_index) == str:
             self.cap = cv2.VideoCapture(self.device_index)
-
+            # 设置基础参数
+            self._apply_basic_settings()
         if not self.cap.isOpened():
             raise RuntimeError(f"无法打开摄像头设备 {self.device_index}")
 
-        # 设置基础参数
-        self._apply_basic_settings()
+
 
         # 获取实际参数值
         self._actual_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -177,6 +177,7 @@ class Camera(BaseCamera):
         self.recording_flag = False
         self.video_writer = None
         self.recording_thread = None
+        self.frametemp = None
         # 自动启动摄像头
         self.start()
 
@@ -223,6 +224,7 @@ class Camera(BaseCamera):
             current_time = time.time()
             if current_time >= next_capture_time:
                 frame = self.read()
+                self.frametemp = frame
                 if frame is not None:
                     with self.lock:  # 确保线程安全
                         self.video_writer.write(frame)
