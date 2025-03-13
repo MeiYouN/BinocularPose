@@ -49,7 +49,7 @@ class MultiCamera:
                     height=self.base_height,
                     fps=self.base_fps
                 )
-                self.cameras[cam_id] = cam
+                self.cameras[cam_id+1] = cam
                 print(f"摄像头 {cam_id} 初始化成功")
             except Exception as e:
                 print(f"摄像头 {cam_id} 初始化失败: {str(e)}")
