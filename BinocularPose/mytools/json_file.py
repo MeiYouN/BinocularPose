@@ -18,10 +18,10 @@ class JsonFile:
     }
 
     def __init__(self, folder_path=None, save_path=None, fps=0):
+        current_datetime = datetime.now()
         if save_path is not None:
             self.save_path = save_path
         else:
-            current_datetime = datetime.now()
             self.save_path = os.path.join(folder_path, f"run_{current_datetime.strftime('%Y%m%d%H%M%S')}.json")
 
         self.data['datetime'] = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
@@ -38,7 +38,8 @@ class JsonFile:
         pose_data_node = {
             'id': self.index,
             'isvis': isvis,
-            'pose': pose_data.tolist(),
+            # 'pose': pose_data.tolist(),
+            'pose': pose_data,
         }
 
         self.data['pose_data'].append(pose_data_node)

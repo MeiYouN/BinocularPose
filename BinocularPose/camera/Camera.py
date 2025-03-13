@@ -252,7 +252,7 @@ class Camera(BaseCamera):
 
             # 保存图像（设置JPG质量）
             if img_type.lower() == "jpg":
-                cv2.imwrite(full_path, frame, [cv2.IMWRITE_JPEG_QUALITY, 95])
+                cv2.imwrite(full_path, frame, [cv2.IMWRITE_JPEG_QUALITY, 100])
             else:
                 cv2.imwrite(full_path, frame)
 

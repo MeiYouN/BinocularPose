@@ -63,7 +63,7 @@ class MultiCamera:
         for cam_id, camera in self.cameras.items():
             save_path = os.path.join(base_path, folder_name)
             os.makedirs(save_path, exist_ok=True)
-            filename = f"cam_{cam_id}.mp4"
+            filename = f"{cam_id:02d}.mp4"
             camera.start_recording(filename, save_path)
 
     def stop_recording_all(self):

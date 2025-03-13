@@ -118,15 +118,17 @@ def detect_chessboard(path, image, out, pattern, gridSize, args):
     dataset = ImageFolder(path, image=image, annot='chessboard', ext=args.ext)
     dataset.isTmp = False
     trange = list(range(len(dataset)))
-    threads = []
-    for i in range(args.mp):
-        ranges = trange[i::args.mp]
-        datas = [dataset[t] for t in ranges]
-        thread = threading.Thread(target=_detect_chessboard, args=(datas, path, image, out, pattern)) # 应该不存在任何数据竞争
-        thread.start()
-        threads.append(thread)
-    for thread in threads:
-        thread.join()
+    datas = [dataset[i] for i in trange]
+    _detect_chessboard(datas, path, image, out, pattern)
+    # threads = []
+    # for i in range(args.mp):
+    #     ranges = trange[i::args.mp]
+    #     datas = [dataset[t] for t in ranges]
+    #     thread = threading.Thread(target=_detect_chessboard, args=(datas, path, image, out, pattern)) # 应该不存在任何数据竞争
+    #     thread.start()
+    #     threads.append(thread)
+    # for thread in threads:
+    #     thread.join()
    
 
 def _detect_by_search(path, image, out, pattern, sub, args):
@@ -245,7 +247,7 @@ def parser_args():
 
     return parser.parse_args()
 
-def det_board(path, pattern, grid, seq=True):
+def det_board(path, pattern, grid, seq=False):
     # args = parser_args()
     import argparse
     args_path = path

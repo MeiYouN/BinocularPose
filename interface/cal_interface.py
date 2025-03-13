@@ -64,7 +64,7 @@ def sync_frame_capture(
                     break
                 elif key == ord('s'):
                     # 保存所有摄像头画面
-                    base_name = f"frame_{counter:04d}"
+                    base_name = f"{counter:04d}"
                     multi_cam.save_frames_all(
                         base_name=base_name,
                         base_path=save_path,
@@ -101,7 +101,7 @@ def cal_interface(dir_path, intri_path, cams=None):
 
 if __name__ == '__main__':
 
-    dir_path = './demo/intri/'
-    intri_path = './intri/intri.yml'
+    dir_path = 'D:\Desktop\EveryThing\WorkProject\BinocularPose\demo_data\cal_test'
+    intri_path = 'D:\Desktop\EveryThing\WorkProject\BinocularPose\demo_data\cal_test/intri.yml'
 
     cal_interface(dir_path, intri_path)
