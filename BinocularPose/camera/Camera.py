@@ -1,5 +1,4 @@
 import os
-from typing import Union
 
 import cv2
 import threading
@@ -7,7 +6,7 @@ import time
 
 
 class BaseCamera:
-    def __init__(self, device_index:Union[int,str]=0, width=None, height=None, fps=None):
+    def __init__(self, device_index=0, width=None, height=None, fps=None):
         """
         初始化摄像头配置参数
         :param device_index: 摄像头设备索引
@@ -41,16 +40,12 @@ class BaseCamera:
             return
 
         # 初始化摄像头
-        if type(self.device_index) == int:
-            self.cap = cv2.VideoCapture(self.device_index, cv2.CAP_DSHOW)
-        elif type(self.device_index) == str:
-            self.cap = cv2.VideoCapture(self.device_index)
-            # 设置基础参数
-            self._apply_basic_settings()
+        self.cap = cv2.VideoCapture(self.device_index, cv2.CAP_DSHOW)
         if not self.cap.isOpened():
             raise RuntimeError(f"无法打开摄像头设备 {self.device_index}")
 
-
+        # 设置基础参数
+        self._apply_basic_settings()
 
         # 获取实际参数值
         self._actual_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -171,13 +166,12 @@ class BaseCamera:
 
 
 class Camera(BaseCamera):
-    def __init__(self, device_index:Union[int,str]=0, width=None, height=None, fps=None):
+    def __init__(self, device_index=0, width=None, height=None, fps=None):
         super().__init__(device_index, width, height, fps)
         # 视频录制相关参数
         self.recording_flag = False
         self.video_writer = None
         self.recording_thread = None
-        self.frametemp = None
         # 自动启动摄像头
         self.start()
 
@@ -224,7 +218,6 @@ class Camera(BaseCamera):
             current_time = time.time()
             if current_time >= next_capture_time:
                 frame = self.read()
-                self.frametemp = frame
                 if frame is not None:
                     with self.lock:  # 确保线程安全
                         self.video_writer.write(frame)
