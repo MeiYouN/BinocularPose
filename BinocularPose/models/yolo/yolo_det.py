@@ -1,5 +1,4 @@
 import cv2
-from torchvision.ops import boxes
 from ultralytics import YOLO
 
 class Yolo_Det:

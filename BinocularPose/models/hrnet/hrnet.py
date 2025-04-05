@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from .modules import BasicBlock, Bottleneck
+from .BasicNet import BasicBlock, Bottleneck
 
 
 class StageModule(nn.Module):
@@ -186,20 +186,18 @@ class HRNet(nn.Module):
 
         x = self.final_layer(x[0])
 
-        return {
-            'output': x
-        }
+        return  x
 
 
 if __name__ == '__main__':
     # model = HRNet(48, 17, 0.1)
-    model = HRNet(32, 17, 0.1)
+    model = HRNet(48, 17, 0.1)
 
     # print(model)
 
     model.load_state_dict(
         # torch.load('./weights/pose_hrnet_w48_384x288.pth')
-        torch.load('./weights/pose_hrnet_w32_256x192.pth')
+        torch.load('./weights/pose_hrnet_w48_384x288.pth')
     )
     print('ok!!')
 
@@ -214,5 +212,6 @@ if __name__ == '__main__':
     model = model.to(device)
 
     y = model(torch.ones(1, 3, 384, 288).to(device))
+    y = y['output']
     print(y.shape)
     print(torch.min(y).item(), torch.mean(y).item(), torch.max(y).item())

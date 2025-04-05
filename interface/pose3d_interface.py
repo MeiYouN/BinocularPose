@@ -38,7 +38,8 @@ class ThreeDPoseProcess:
         keypoints = []
         for frame, bbox in zip(frames, bboxes):
             keypoints2d = self.pose_model(frame, bbox)
-            keypoints.append(keypoints2d)
+            keypoints.append(keypoints2d[0])
+            # print(keypoints2d)
 
         return np.array(keypoints)
 
@@ -49,11 +50,14 @@ class ThreeDPoseProcess:
 
         self.frame_index += 1
         bboxs = self.detection(frames)
-        if self.count_empty_arrays(bboxs) < 2:
-            print('当前有效视角不足')
-            return np.array([])
+        print(bboxs)
+        # if len(bboxs) <= 2:
+        #     print('当前有效视角不足')
+        #     return np.array([])
         keypoints = self.pose_estimation(frames, bboxs)
+        # print(keypoints)
         keypoints3d = self.triangulate(keypoints, cameras)
+        print(keypoints3d)
 
         return keypoints3d
 
