@@ -360,10 +360,7 @@ class DataTab(QWidget):
         try:
             self.posedatalist = self.dataload.load_data_list(self.current_file)
             self.datalen = len(self.posedatalist)
-
             # 示例可视化逻辑
-
-
             self.drawpose(np.array(self.posedatalist[0]))
             self.canvas.draw()
 
