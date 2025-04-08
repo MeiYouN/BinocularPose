@@ -1,6 +1,8 @@
 from pathlib import Path
 from dataclasses import dataclass
 
+
+
 # from BinocularPose.models.hrnet import SimpleHRNet
 # from BinocularPose.models.mymmpose.mymmpose import MyMMP
 # from BinocularPose.models.yolo.yolo_det import Yolo_Det
@@ -26,6 +28,11 @@ class AppConfig:
     #     self.yolo_model = Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt')
     #     # pose_model = SimpleHRNet('BinocularPose/models/hrnet/weights/pose_hrnet_w48_384x288.pth')
     #     self.pose_model = MyMMP('BinocularPose/models/mymmpose')
+
+    # processor = ThreeDPoseProcess(
+    #     yolo_model=Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt'),
+    #     pose_model=SimpleHRNet('BinocularPose/models/hrnet/weights/pose_hrnet_w48_384x288.pth')
+    # )
 
 class GlobalConfig:
     _instance = None

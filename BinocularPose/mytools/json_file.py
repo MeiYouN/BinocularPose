@@ -21,7 +21,7 @@ class JsonFile:
         current_datetime = datetime.now()
         if save_path is not None:
             self.save_path = save_path
-        else:
+        elif folder_path is not None:
             self.save_path = os.path.join(folder_path, f"run_{current_datetime.strftime('%Y%m%d%H%M%S')}.json")
 
         self.data['datetime'] = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
@@ -57,10 +57,14 @@ class JsonFile:
         with open(self.save_path, "w", encoding="utf-8") as fp:
             json.dump(self.data, fp, indent=4)
 
-    def load(self, fp):
+    def load_data_list(self, fp):
         with open(fp, "r", encoding="utf-8") as fp:
             self.data = json.load(fp)
-            return self.data
+            pose_data = []
+            for data in self.data['pose_data']:
+                pose_data.append(data['pose'])
+            return pose_data
+
 
     def get_2dpose_data(self):
         return self.data

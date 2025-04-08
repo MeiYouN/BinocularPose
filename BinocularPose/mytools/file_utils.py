@@ -18,6 +18,24 @@ def read_json(path):
             data = []
     return data
 
+def get_files_by_extension(path, extension='.mp4'):
+    """
+    获取指定路径下特定后缀的文件名（含路径）
+    :param path: 目标路径
+    :param extension: 文件后缀（如 ".txt"）
+    :return: 符合条件的文件路径列表
+    """
+
+    # 遍历目录，筛选符合条件的文件
+    matched_files = []
+    for filename in os.listdir(path):
+        full_path = os.path.join(path, filename)
+        if os.path.isfile(full_path) and filename.endswith(extension):
+            matched_files.append(full_path)
+
+    return matched_files
+
+
 def save_json(file, data):
     if not os.path.exists(os.path.dirname(file)):
         os.makedirs(os.path.dirname(file))

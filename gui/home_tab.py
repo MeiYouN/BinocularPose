@@ -71,6 +71,7 @@ class HomeTab(QWidget):
                 raise FileExistsError("记录已存在")
             target_path.mkdir(parents=True)
             CONFIG.workdir = target_path
+            CONFIG.calib_dir = CONFIG.workdir / 'calibration'
             self.switch_to_record.emit()
             # QMessageBox.information(self, "成功", f"记录已创建在:\n{target_path}")
         except Exception as e:
@@ -89,5 +90,6 @@ class HomeTab(QWidget):
             return
 
         CONFIG.workdir = target_path
+        CONFIG.calib_dir = CONFIG.workdir / 'calibration'
         self.switch_to_record.emit()
         QMessageBox.information(self, "成功", f"已加载记录:\n{target_path}")

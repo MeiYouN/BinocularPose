@@ -54,7 +54,7 @@ class CsvFile:
 
 
     def update(self, pose_data:np.ndarray):
-        dataone = [j for i in pose_data for j in i]
+        dataone = [j for i in pose_data.tolist() for j in i]
         self.data.append(dataone)
 
 

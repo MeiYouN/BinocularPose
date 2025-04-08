@@ -1,6 +1,9 @@
 import json
+import os
 import socket
 from pathlib import Path
+
+import cv2
 import numpy as np
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLineEdit,
@@ -10,8 +13,15 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QDir, QTimer
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+
+from BinocularPose.mytools.file_utils import get_files_by_extension
+from BinocularPose.mytools.json_file import JsonFile
+from BinocularPose.mytools.load_para import load_yml
 from config.Config import CONFIG
 
+
+connnection = [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6], [5, 7], [6, 8], [7, 9],
+               [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4]]
 
 class DataTab(QWidget):
     def __init__(self):
@@ -27,6 +37,10 @@ class DataTab(QWidget):
         self.check_state = False
         self.sock = None
         self.connection_status = False
+
+        self.dataload = JsonFile()
+        self.posedatalist = []
+        self.datalen = 0
 
     def init_ui(self):
         main_splitter = QSplitter(Qt.Horizontal)
@@ -255,14 +269,7 @@ class DataTab(QWidget):
             self.txt_file_path.setText(path)
             self.current_file = Path(path)
 
-    def select_action_folder(self):
-        """选择动作文件夹"""
-        folder = QFileDialog.getExistingDirectory(
-            self, "选择动作文件夹",
-            str(CONFIG.workdir) if CONFIG.workdir else ""
-        )
-        if folder:
-            self.txt_action_folder.setText(folder)
+
 
     def select_action_file(self):
         """选择动作文件"""
@@ -301,7 +308,7 @@ class DataTab(QWidget):
         self.is_playing = not self.is_playing
         self.btn_play.setText("⏸" if self.is_playing else "▶")
         if self.is_playing:
-            self.play_timer.start(33)  # 20fps
+            self.play_timer.start(33)  # 30fps
         else:
             self.play_timer.stop()
 
@@ -314,20 +321,34 @@ class DataTab(QWidget):
 
     def update_playback(self):
         """更新播放进度"""
-        if self.current_frame >= 100:
+        if self.current_frame >= self.datalen:
             self.restart_playback()
             return
         self.current_frame += 1
         self.progress.setValue(self.current_frame)
 
+        self.drawpose(np.array(self.posedatalist[self.current_frame]))
+        self.canvas.draw()
+
         # 获取当前帧数据（示例）
         current_data = {
             "frame": self.current_frame,
-            "position": [0.1, 0.2, 0.3],  # 替换为真实数据
-            "timestamp": np.datetime64('now')
+            "position": self.posedatalist[self.current_frame]
         }
         # 发送数据
         self.send_frame_data(current_data)
+
+    def drawpose(self, keypoints3d):
+        self.ax.clear()
+        self.ax.set_xlim3d(-1, 1)
+        self.ax.set_ylim3d(-1, 1.1)
+        self.ax.set_zlim3d(0, 1.8)
+        self.ax.scatter(keypoints3d[:, 0], keypoints3d[:, 1], keypoints3d[:, 2], s=10)
+        for _c in connnection:
+            self.ax.plot([keypoints3d[_c[0], 0], keypoints3d[_c[1], 0]],
+                         [keypoints3d[_c[0], 1], keypoints3d[_c[1], 1]],
+                         [keypoints3d[_c[0], 2], keypoints3d[_c[1], 2]], 'g')
+
 
     def load_data(self):
         """加载数据并可视化"""
@@ -335,25 +356,19 @@ class DataTab(QWidget):
             QMessageBox.warning(self, "错误", "请先选择有效的动作文件")
             return
 
-        if not self.validate_json(self.current_file):
-            QMessageBox.critical(self, "错误", "无效的动作数据格式")
-            return
 
         try:
-            with open(self.current_file, 'r') as f:
-                motion_data = json.load(f)
+            self.posedatalist = self.dataload.load_data_list(self.current_file)
+            self.datalen = len(self.posedatalist)
 
             # 示例可视化逻辑
-            positions = np.array(motion_data['positions'])
-            x, y, z = positions[:, 0], positions[:, 1], positions[:, 2]
 
-            self.ax.clear()
-            self.ax.scatter(x, y, z, c='r', marker='o')
-            self.ax.set_title(f"动作数据可视化: {self.current_file.stem}")
+
+            self.drawpose(np.array(self.posedatalist[0]))
             self.canvas.draw()
 
             self.set_playback_enabled(True)
-            self.progress.setMaximum(100)  # 假设总帧数为100
+            self.progress.setMaximum(self.datalen)  # 假设总帧数为100
             self.progress.setValue(0)
 
             # 初始化网络连接
@@ -378,11 +393,45 @@ class DataTab(QWidget):
 
         # 这里添加实际处理逻辑
         print(f"开始处理文件夹: {folder}")
-        QMessageBox.information(self, "提示", "离线姿态估计功能需要具体实现")
+        # QMessageBox.information(self, "提示", "离线姿态估计功能需要具体实现")
         self.set_playback_enabled(False)
         try:
-        # ...原有处理逻辑...
-            pass
+            videos_path = os.path.join(str(CONFIG.workdir), folder)
+            video_names = get_files_by_extension(videos_path)
+
+            cameras = load_yml(str(CONFIG.calib_dir))
+            caplist = []
+            for video_name in video_names:
+                video_path = os.path.join(videos_path, video_name)
+                cap = cv2.VideoCapture(video_path)
+                caplist.append(cap)
+
+            jf = JsonFile(videos_path, videos_path  + f'run_{folder}.json')
+
+            cap_nums = len(caplist)
+            frame_count = 0
+            while True:
+
+                frames = []
+                for cap in caplist:
+                    ret, frame = cap.read()
+                    if ret:
+                        frames.append(frame)
+
+                if not cap_nums == len(frames):
+                    print(f'视频已结束，共{jf.index}帧')
+                    break
+
+                keypoints3d = CONFIG.processor.run_process(frames, cameras)
+                self.drawpose(keypoints3d)
+                jf.update(keypoints3d)
+
+            jf.save()
         finally:
             # 处理完成后恢复状态
             self.set_playback_enabled(True)
+
+
+
+
+
