@@ -41,7 +41,7 @@ def sync_frame_capture(
             multi_cam = camera_model
 
         # 创建保存目录
-        save_path = save + 'images'
+        save_path = os.path.join(save, 'images')
         os.makedirs(save_path, exist_ok=True)
 
         # 启动带事件回调的可视化预览
@@ -89,12 +89,12 @@ def sync_frame_capture(
         cv2.destroyAllWindows()
 
 
-def cal_interface(dir_path, intri_path, cams=None):
+def cal_interface(dir_path, intri_path, cams=None, pattern=(7,5), grid=0.1):
 
     print("图像获取开始")
     sync_frame_capture(cams,dir_path)
     print("开始检测角点")
-    det_board(dir_path, (7,5), 0.1)
+    det_board(dir_path, pattern, grid)
     print("开始计算")
     calib_extri(dir_path, intri_path, 1)
     print("标定结束")

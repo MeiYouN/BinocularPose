@@ -1,6 +1,3 @@
-# detect the corner of chessboard
-from torch.utils.tensorboard.summary import image
-
 from BinocularPose.mytools.file_utils import getFileList, read_json, save_json
 from tqdm import tqdm
 from BinocularPose.mytools.basic_utils import ImageFolder

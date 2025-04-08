@@ -170,7 +170,7 @@ class MultiCamera:
 
             # 动态计算布局
             rows, cols = self._calculate_layout(layout, len(resized_frames))
-            combined = self._arrange_frames(resized_frames, rows, cols)
+            combined = self.arrange_frames(resized_frames, rows, cols)
 
             current_time = time.time()
             fps_counter += 1
@@ -211,7 +211,7 @@ class MultiCamera:
         cols = sqrt if sqrt * sqrt == frame_count else sqrt + 1
         return (rows, cols)
 
-    def _arrange_frames(self, frames, rows, cols):
+    def arrange_frames(self, frames, rows, cols):
         """排列拼接画面"""
         grid = []
         for i in range(rows):
