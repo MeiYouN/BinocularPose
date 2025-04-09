@@ -192,9 +192,9 @@ class RealTimeTab(QWidget):
         """显示视频帧"""
         pixmap = QPixmap.fromImage(q_img)
         self.video_label.setPixmap(pixmap.scaled(
-            self.video_label.size(),
+            800,
+            self.video_label.height(),
             Qt.KeepAspectRatio,
-            Qt.SmoothTransformation
         ))
 
     def update_3d_plot(self, keypoints3d):
