@@ -27,6 +27,8 @@ class RealTimeTab(QWidget):
 
     def __init__(self):
         super().__init__()
+        self.port = None
+        self.host = None
         self.connection_status = None
         self.frames = None
         self.camera = None
@@ -268,11 +270,16 @@ class RealTimeTab(QWidget):
             self.update_3d.emit(keypoints3d)
             # 转发数据
             if self.cb_forward.isChecked():
-                current_data = {
-                    "frame": frame_count,
-                    "position": keypoints3d.tolist(),
+                # current_data = {
+                #     "frame": frame_count,
+                #     "position": keypoints3d.tolist(),
+                # }
+                data_to_send = {
+                    "frame_id": frame_count,
+                    "keypoints": keypoints3d.tolist(),
                 }
-                self.send_data(current_data)
+                data = {"signal": "Capture", "data": data_to_send}
+                self.send_data(data)
             jf.update(keypoints3d)
             frame_count += 1
 
@@ -283,17 +290,17 @@ class RealTimeTab(QWidget):
         if not self.cb_forward.isChecked():
             return
 
-        host = self.txt_host.text()
-        port = self.txt_port.text()
-        if not host or not port.isdigit():
+        self.host = self.txt_host.text()
+        self.port = self.txt_port.text()
+        if not self.host or not self.port.isdigit():
             QMessageBox.warning(self, "错误", "请输入有效的主机地址和端口号")
             return False
 
         try:
             self.close_connection()
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.settimeout(3)
-            self.sock.connect((host, int(port)))
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            # self.sock.settimeout(3)
+            # self.sock.connect((host, int(port)))
             self.connection_status = True
             return True
         except Exception as e:
@@ -327,7 +334,7 @@ class RealTimeTab(QWidget):
         try:
             # 转换为JSON格式
             json_data = json.dumps(data)
-            self.sock.sendall(json_data.encode('utf-8') + b'\n')
+            self.sock.sendto(json_data.encode('utf-8'),(self.host, self.port))
         except Exception as e:
             self.connection_status = False
             print(f"数据发送失败: {str(e)}")
