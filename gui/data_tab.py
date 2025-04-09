@@ -27,6 +27,8 @@ connnection = [[15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12
 class DataTab(QWidget):
     def __init__(self):
         super().__init__()
+        self.port = None
+        self.host = None
         self.current_file = None
         self.play_timer = QTimer(self)
         self.current_frame = 0
@@ -199,17 +201,17 @@ class DataTab(QWidget):
         if not self.cb_forward.isChecked():
             return
 
-        host = self.txt_host.text()
-        port = self.txt_port.text()
-        if not host or not port.isdigit():
+        self.host = self.txt_host.text()
+        self.port = self.txt_port.text()
+        if not self.host or not self.port.isdigit():
             QMessageBox.warning(self, "错误", "请输入有效的主机地址和端口号")
             return False
 
         try:
             self.close_connection()
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.settimeout(3)
-            self.sock.connect((host, int(port)))
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            # self.sock.settimeout(3)
+            # self.sock.connect((host, int(port)))
             self.update_conn_status(True)
             return True
         except Exception as e:
@@ -240,7 +242,7 @@ class DataTab(QWidget):
         try:
             # 转换为JSON格式
             json_data = json.dumps(frame_data)
-            self.sock.sendall(json_data.encode('utf-8') + b'\n')
+            self.sock.sendto(json_data.encode('utf-8'),(self.host, self.port))
         except Exception as e:
             self.update_conn_status(False)
             print(f"数据发送失败: {str(e)}")
@@ -333,12 +335,17 @@ class DataTab(QWidget):
 
         self.drawpose(np.array(self.posedatalist[self.current_frame]))
         # 获取当前帧数据（示例）
-        current_data = {
-            "frame": self.current_frame,
-            "position": self.posedatalist[self.current_frame]
+        # current_data = {
+        #     "frame": self.current_frame,
+        #     "position": self.posedatalist[self.current_frame]
+        # }
+        data_to_send = {
+            "frame_id": self.current_frame,
+            "keypoints": self.posedatalist[self.current_frame]
         }
+        data = {"signal": "Capture", "data": data_to_send}
         # 发送数据
-        self.send_frame_data(current_data)
+        self.send_frame_data(data)
         self.current_frame += 1
 
     def drawpose(self, keypoints3d):
@@ -414,9 +421,11 @@ class DataTab(QWidget):
 
     def run_pose(self, folder):
         self.set_playback_enabled(False)
+
+        videos_path = os.path.join(str(CONFIG.workdir), folder)
+        video_names = get_files_by_extension(videos_path)
+        jf = JsonFile(videos_path, videos_path + f'/run_{folder}.json')
         try:
-            videos_path = os.path.join(str(CONFIG.workdir), folder)
-            video_names = get_files_by_extension(videos_path)
 
             cameras = load_yml(str(CONFIG.calib_dir))
             caplist = []
@@ -424,8 +433,6 @@ class DataTab(QWidget):
                 video_path = os.path.join(videos_path, video_name)
                 cap = cv2.VideoCapture(video_path)
                 caplist.append(cap)
-
-            jf = JsonFile(videos_path, videos_path + f'/run_{folder}.json')
 
             cap_nums = len(caplist)
             frame_count = 0
@@ -453,9 +460,10 @@ class DataTab(QWidget):
                 jf.update(keypoints3d)
                 frame_count += 1
 
-            jf.save()
+
         finally:
             # 处理完成后恢复状态
+            jf.save()
             self.set_playback_enabled(True)
 
 
