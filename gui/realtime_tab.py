@@ -236,7 +236,7 @@ class RealTimeTab(QWidget):
         if live_pose:
             self.online_thread = threading.Thread(
                 target=self.online_pose,
-                args=action_name,
+                args=(action_name,),
                 daemon=True
             )
             self.is_running = True
@@ -253,7 +253,7 @@ class RealTimeTab(QWidget):
         videos_path = os.path.join(str(CONFIG.workdir), pose_name)
         cameras = load_yml(str(CONFIG.calib_dir))
 
-        jf = JsonFile(videos_path, videos_path  + f'run_{pose_name}.json')
+        jf = JsonFile(videos_path, videos_path  + f'/run_{pose_name}.json')
 
         frame_count = 0
         while self.is_running:

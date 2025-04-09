@@ -3,10 +3,10 @@ from dataclasses import dataclass
 
 
 
-# from BinocularPose.models.hrnet import SimpleHRNet
-# from BinocularPose.models.mymmpose.mymmpose import MyMMP
-# from BinocularPose.models.yolo.yolo_det import Yolo_Det
-
+from BinocularPose.models.hrnet import SimpleHRNet
+from BinocularPose.models.mymmpose.mymmpose import MyMMP
+from BinocularPose.models.yolo.yolo_det import Yolo_Det
+from interface.pose3d_interface import ThreeDPoseProcess
 
 
 class AppConfig:
@@ -22,17 +22,17 @@ class AppConfig:
     # 摄像头内参文件
     path_intri = 'D:\desktop\MouseWithoutBorders\BinocularPose\gui\calibration\intri.yml'
 
-
-
+    yolo_path = 'D:\Desktop\EveryThing\WorkProject\BinocularPose\BinocularPose\models\mymmpose\weights\yolo11n.pt'
+    mmpose_path = 'D:\Desktop\EveryThing\WorkProject\BinocularPose\BinocularPose\models\mymmpose'
     # def load_model(self):
     #     self.yolo_model = Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt')
     #     # pose_model = SimpleHRNet('BinocularPose/models/hrnet/weights/pose_hrnet_w48_384x288.pth')
     #     self.pose_model = MyMMP('BinocularPose/models/mymmpose')
 
-    # processor = ThreeDPoseProcess(
-    #     yolo_model=Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt'),
-    #     pose_model=SimpleHRNet('BinocularPose/models/hrnet/weights/pose_hrnet_w48_384x288.pth')
-    # )
+    processor = ThreeDPoseProcess(
+        yolo_model=Yolo_Det(yolo_path),
+        pose_model=MyMMP(mmpose_path)
+    )
 
 class GlobalConfig:
     _instance = None

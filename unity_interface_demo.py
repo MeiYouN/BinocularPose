@@ -47,11 +47,11 @@ class UnityInterfaceDemo(object):
         else:
             self.intri = self.cal_dir
 
-        if cam_id_list is not None:
-            self.video_model = LiveVideo(camera_ids=self.cam_id_list,
-                                   resolution=(2048, 1536),
-                                   fps=30,
-                                   work_dir=self.work_dri)
+        # if cam_id_list is not None:
+        #     self.video_model = LiveVideo(camera_ids=self.cam_id_list,
+        #                            resolution=(2048, 1536),
+        #                            fps=30,
+        #                            work_dir=self.work_dri)
 
         # self.processor = ThreeDPoseProcess(
         #     yolo_model=Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt'),

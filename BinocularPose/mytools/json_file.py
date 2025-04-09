@@ -38,8 +38,8 @@ class JsonFile:
         pose_data_node = {
             'id': self.index,
             'isvis': isvis,
-            # 'pose': pose_data.tolist(),
-            'pose': pose_data,
+            'pose': pose_data.tolist(),
+            # 'pose': pose_data,
         }
 
         self.data['pose_data'].append(pose_data_node)

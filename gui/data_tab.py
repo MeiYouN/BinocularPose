@@ -1,6 +1,7 @@
 import json
 import os
 import socket
+import threading
 from pathlib import Path
 
 import cv2
@@ -41,6 +42,9 @@ class DataTab(QWidget):
         self.dataload = JsonFile()
         self.posedatalist = []
         self.datalen = 0
+
+        self.is_runing = False
+        self.run_thread = None
 
     def init_ui(self):
         main_splitter = QSplitter(Qt.Horizontal)
@@ -384,14 +388,31 @@ class DataTab(QWidget):
 
     def run_offline_estimation(self):
         """离线姿态估计"""
-        folder = self.txt_action_folder.text()
-        if not folder:
-            QMessageBox.warning(self, "提示", "请先选择动作文件夹")
-            return
 
-        # 这里添加实际处理逻辑
-        print(f"开始处理文件夹: {folder}")
-        # QMessageBox.information(self, "提示", "离线姿态估计功能需要具体实现")
+        if not self.is_runing:
+            folder = self.txt_action_folder.text()
+            if not folder:
+                QMessageBox.warning(self, "提示", "请先选择动作文件夹")
+                return
+
+            # 这里添加实际处理逻辑
+            print(f"开始处理文件夹: {folder}")
+            # QMessageBox.information(self, "提示", "离线姿态估计功能需要具体实现")
+            self.run_thread = threading.Thread(
+                target=self.run_pose,
+                args=(folder,),
+                daemon=True
+            )
+            self.is_runing = True
+            self.run_thread.start()
+        else:
+            self.is_runing = False
+            if self.run_thread is not None:
+                self.run_thread.join()
+            self.run_thread = None
+            self.run_thread = None
+
+    def run_pose(self, folder):
         self.set_playback_enabled(False)
         try:
             videos_path = os.path.join(str(CONFIG.workdir), folder)
@@ -404,11 +425,11 @@ class DataTab(QWidget):
                 cap = cv2.VideoCapture(video_path)
                 caplist.append(cap)
 
-            jf = JsonFile(videos_path, videos_path  + f'run_{folder}.json')
+            jf = JsonFile(videos_path, videos_path + f'/run_{folder}.json')
 
             cap_nums = len(caplist)
             frame_count = 0
-            while True:
+            while self.is_runing:
 
                 frames = []
                 for cap in caplist:
@@ -422,13 +443,20 @@ class DataTab(QWidget):
 
                 keypoints3d = CONFIG.processor.run_process(frames, cameras)
                 self.drawpose(keypoints3d)
+                if self.cb_forward.isChecked():
+                    current_data = {
+                        "frame": frame_count,
+                        "position": keypoints3d.tolist(),
+                    }
+                    # 发送数据
+                    self.send_frame_data(current_data)
                 jf.update(keypoints3d)
+                frame_count += 1
 
             jf.save()
         finally:
             # 处理完成后恢复状态
             self.set_playback_enabled(True)
-
 
 
 

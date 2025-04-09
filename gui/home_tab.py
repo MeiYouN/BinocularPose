@@ -52,7 +52,7 @@ class HomeTab(QWidget):
         """创建新记录"""
         # 选择父目录
         parent_dir = QFileDialog.getExistingDirectory(
-            self, "选择保存目录", str(Path.home()))
+            self, "选择保存目录", str(CONFIG.workdir))
         if not parent_dir:
             return
 
@@ -80,7 +80,7 @@ class HomeTab(QWidget):
     def load_record(self):
         """加载现有记录"""
         selected_dir = QFileDialog.getExistingDirectory(
-            self, "选择记录目录", str(Path.home()))
+            self, "选择记录目录", str(CONFIG.workdir))
         if not selected_dir:
             return
 
