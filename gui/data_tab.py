@@ -325,14 +325,13 @@ class DataTab(QWidget):
 
     def update_playback(self):
         """更新播放进度"""
-        if self.current_frame > self.datalen:
+        if self.current_frame >= self.datalen:
             self.restart_playback()
             return
 
         self.progress.setValue(self.current_frame)
 
         self.drawpose(np.array(self.posedatalist[self.current_frame]))
-        self.current_frame += 1
         # 获取当前帧数据（示例）
         current_data = {
             "frame": self.current_frame,
@@ -340,6 +339,7 @@ class DataTab(QWidget):
         }
         # 发送数据
         self.send_frame_data(current_data)
+        self.current_frame += 1
 
     def drawpose(self, keypoints3d):
         self.ax.clear()

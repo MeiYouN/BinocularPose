@@ -193,7 +193,7 @@ class RealTimeTab(QWidget):
         """显示视频帧"""
         pixmap = QPixmap.fromImage(q_img)
         self.video_label.setPixmap(pixmap.scaled(
-            800,
+            600,
             self.video_label.height(),
             Qt.KeepAspectRatio,
         ))
@@ -214,13 +214,12 @@ class RealTimeTab(QWidget):
 
     def toggle_operation(self):
         """切换运行状态"""
-        self.is_running = not self.is_running
-        self.btn_control.setText("停止运行" if self.is_running else "开始运行")
-        self.lbl_status.setText("运行中" if self.is_running else "已停止")
         if self.is_running:
             self.stop_recording()
         else:
             self.start_recording()
+        self.btn_control.setText("停止运行" if self.is_running else "开始运行")
+        self.lbl_status.setText("运行中" if self.is_running else "已停止")
 
 
     def start_recording(self, live_pose=True):
