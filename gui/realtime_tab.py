@@ -179,6 +179,7 @@ class RealTimeTab(QWidget):
         self.frames = self.camera.get_frames()
 
         frame = self.camera.arrange_frames(self.frames, 2, 1)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         h, w, ch = frame.shape
         # w, h = w//3, h//3
         # frame = cv2.resize(frame, (w, h))
@@ -240,6 +241,7 @@ class RealTimeTab(QWidget):
                 daemon=True
             )
             self.is_running = True
+            print(1)
             self.online_thread.start()
 
     def stop_recording(self):
@@ -257,6 +259,7 @@ class RealTimeTab(QWidget):
 
         frame_count = 0
         while self.is_running:
+            print(2)
             frames = self.frames
             if not 2 == len(frames):
                 print(f'视频已结束，共{jf.index}帧')

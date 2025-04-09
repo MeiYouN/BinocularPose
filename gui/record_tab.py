@@ -184,6 +184,7 @@ class RecordTab(QWidget):
         frames = self.camera.get_frames()
 
         frame = self.camera.arrange_frames(frames,1,2)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         h, w, ch = frame.shape
         # w, h = w//3, h//3
         # frame = cv2.resize(frame, (w, h))
