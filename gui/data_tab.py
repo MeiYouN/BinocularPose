@@ -328,7 +328,6 @@ class DataTab(QWidget):
         self.progress.setValue(self.current_frame)
 
         self.drawpose(np.array(self.posedatalist[self.current_frame]))
-        self.canvas.draw()
 
         # 获取当前帧数据（示例）
         current_data = {
@@ -349,6 +348,8 @@ class DataTab(QWidget):
                          [keypoints3d[_c[0], 1], keypoints3d[_c[1], 1]],
                          [keypoints3d[_c[0], 2], keypoints3d[_c[1], 2]], 'g')
 
+        self.canvas.draw()
+
 
     def load_data(self):
         """加载数据并可视化"""
@@ -362,7 +363,7 @@ class DataTab(QWidget):
             self.datalen = len(self.posedatalist)
             # 示例可视化逻辑
             self.drawpose(np.array(self.posedatalist[0]))
-            self.canvas.draw()
+
 
             self.set_playback_enabled(True)
             self.progress.setMaximum(self.datalen)  # 假设总帧数为100
