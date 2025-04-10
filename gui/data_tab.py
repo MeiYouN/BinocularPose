@@ -242,7 +242,7 @@ class DataTab(QWidget):
         try:
             # 转换为JSON格式
             json_data = json.dumps(frame_data)
-            self.sock.sendto(json_data.encode('utf-8'),(self.host, self.port))
+            self.sock.sendto(json_data.encode('utf-8'),(self.host, int(self.port)))
         except Exception as e:
             self.update_conn_status(False)
             print(f"数据发送失败: {str(e)}")
