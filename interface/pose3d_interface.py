@@ -1,5 +1,6 @@
 
 import numpy as np
+from typing import List
 
 from BinocularPose.camera.MultiCamera import MultiCamera
 from BinocularPose.models.mymmpose.mymmpose import MyMMP
@@ -34,7 +35,7 @@ class ThreeDPoseProcess:
         bboxs = self.yolo(frames)
         return bboxs
 
-    def pose_estimation(self, frames: list[np.ndarray], bboxes:list[np.ndarray])->np.ndarray:
+    def pose_estimation(self, frames: List[np.ndarray], bboxes: List[np.ndarray])->np.ndarray:
         keypoints = []
         for frame, bbox in zip(frames, bboxes):
             keypoints2d = self.pose_model(frame, bbox)

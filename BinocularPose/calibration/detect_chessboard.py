@@ -231,8 +231,8 @@ def parser_args():
                         help='The pattern of the chessboard', default=(7, 5))
     parser.add_argument('--grid', type=float, default=0.1,
                         help='The length of the grid size (unit: meter)')
-    parser.add_argument('--max_step', type=int, default=60)
-    parser.add_argument('--min_step', type=int, default=50)
+    parser.add_argument('--max_step', type=int, default=40)
+    parser.add_argument('--min_step', type=int, default=10)
     parser.add_argument('--mp', type=int, default=4)
     parser.add_argument('--axis', type=str, default='yx')
 
