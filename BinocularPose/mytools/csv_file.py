@@ -46,6 +46,7 @@ class CsvFile:
                   'Rankle_x', 'Rankle_y', 'Rankle_z', 'Rankle_score',]
 
     def __init__(self, folder_path=None, save_path=None, fps=0):
+        self.index = 0
         current_datetime = datetime.now()
         if save_path is not None:
             self.save_path = save_path
@@ -56,6 +57,7 @@ class CsvFile:
     def update(self, pose_data:np.ndarray):
         dataone = [j for i in pose_data.tolist() for j in i]
         self.data.append(dataone)
+        self.index += 1
 
 
     def save(self):

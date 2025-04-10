@@ -46,8 +46,8 @@ class RealTimeTab(QWidget):
         self.video_label.setAlignment(Qt.AlignCenter)
         self.video_label.setStyleSheet("""
             background-color: rgba(0, 0, 0, 50);
-            min-weight: 600px;
-            max-weight: 800px;
+            min-width: 400px;
+            max-width: 600px;
             border: 2px solid #666;
         """)
         self.set_video_overlay("摄像头未开启")
@@ -193,8 +193,8 @@ class RealTimeTab(QWidget):
         """显示视频帧"""
         pixmap = QPixmap.fromImage(q_img)
         self.video_label.setPixmap(pixmap.scaled(
-            600,
-            self.video_label.height(),
+            self.video_label.width(),
+            800,
             Qt.KeepAspectRatio,
         ))
 

@@ -20,7 +20,7 @@ class HomeTab(QWidget):
         layout.setAlignment(Qt.AlignCenter)
 
         # Logo
-        logo = QLabel("MotionRecorder Pro")
+        logo = QLabel("MeiYouMocap Pro")
         logo.setFont(QFont("Arial", 24, QFont.Bold))
         layout.addWidget(logo)
 
