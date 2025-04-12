@@ -40,7 +40,7 @@ class ThreeDPoseProcess:
         for frame, bbox in zip(frames, bboxes):
             keypoints2d = self.pose_model(frame, bbox)
 
-            keypoints.append(keypoints2d[0])
+            keypoints.append(keypoints2d)
 
         return np.array(keypoints)
 

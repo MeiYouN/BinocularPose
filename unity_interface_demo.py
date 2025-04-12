@@ -55,14 +55,14 @@ class UnityInterfaceDemo(object):
         #                            fps=30,
         #                            work_dir=self.work_dri)
 
-        # self.processor = ThreeDPoseProcess(
-        #     yolo_model=Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt'),
-        #     pose_model=MyMMP('BinocularPose/models/mymmpose')
-        # )
         self.processor = ThreeDPoseProcess(
             yolo_model=Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt'),
-            pose_model=SimpleHRNet('BinocularPose/models/hrnet/weights/pose_hrnet_w48_384x288.pth')
+            pose_model=MyMMP('BinocularPose/models/mymmpose')
         )
+        # self.processor = ThreeDPoseProcess(
+        #     yolo_model=Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt'),
+        #     pose_model=SimpleHRNet('BinocularPose/models/hrnet/weights/pose_hrnet_w48_384x288.pth')
+        # )
 
         self.online_thread = None
 
@@ -109,7 +109,7 @@ class UnityInterfaceDemo(object):
             video_path = os.path.join(videos_path, video_name)
             cap = cv2.VideoCapture(video_path)
             caplist.append(cap)
-        jf = CsvFile(videos_path, savedir+'/zsdata/'+save_data_name)
+        jf = JsonFile(videos_path, savedir+'/zsdata/'+save_data_name)
 
         cap_nums = len(caplist)
         try:
@@ -168,7 +168,7 @@ if __name__ == '__main__':
 
     unity = UnityInterfaceDemo(work_dri=work_dri)
 
-    posenames = ['rom1','rom2','rom3','walking1','walking2','walking3']
+    posenames = ['acting1']
     for pose_name in posenames:
         print(pose_name)
         unity.offline_pose(pose_name)
