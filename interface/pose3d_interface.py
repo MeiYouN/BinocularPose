@@ -56,7 +56,7 @@ class ThreeDPoseProcess:
         #     print('当前有效视角不足')
         #     return np.array([])
         keypoints = self.pose_estimation(frames, bboxs)
-        # print(keypoints)
+        print(keypoints)
         keypoints3d = self.triangulate(keypoints, cameras)
         # print(keypoints3d)
 
