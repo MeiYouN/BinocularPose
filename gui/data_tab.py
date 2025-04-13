@@ -381,7 +381,7 @@ class DataTab(QWidget):
             self.datalen = self.posedatalist.shape[0]
             # 示例可视化逻辑
             if self.check_xy:
-                self.posedatalist[:,[1,2]] = self.posedatalist[:,[2,1]]
+                self.posedatalist[:,:,[1,2]] = self.posedatalist[:,:,[2,1]]
 
             self.drawpose(self.posedatalist[0])
 
@@ -459,6 +459,10 @@ class DataTab(QWidget):
                     break
 
                 keypoints3d = CONFIG.processor.run_process(frames, cameras)
+
+                if self.check_xy:
+                    keypoints3d[:,[1,2]] = keypoints3d[:,[2,1]]
+
                 self.drawpose(keypoints3d)
                 if self.cb_forward.isChecked():
                     current_data = {
