@@ -1,15 +1,23 @@
 import cv2
+import numpy as np
 from ultralytics import YOLO
 
 class Yolo_Det:
     def __init__(self, model='./weights/yolo11n.pt'):
         self.model = YOLO(model)
 
+    def selectMaxConf(self,boxe):
+        confs = boxe.conf.cpu().numpy()
+        if len(confs) > 0:
+            maxindex = np.argmax(confs)
+            return boxe.xyxy[maxindex].cpu().numpy()
+        return np.array([])
+
     def ret_all_box(self,results):
         boxes = []
         for res in results:
-            boxe = res.boxes.xyxy.cpu().numpy()
-            boxes.append(boxe)
+            boxe = self.selectMaxConf(res.boxes)
+            boxes.append([boxe])
 
         return boxes
 

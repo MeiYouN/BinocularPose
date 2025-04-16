@@ -9,7 +9,7 @@ from realtime_tab import RealTimeTab
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("动作记录分析系统")
+        self.setWindowTitle("MeiYouMocap动作记录分析系统")
         self.setGeometry(100, 100, 800, 600)
 
         # 创建标签容器

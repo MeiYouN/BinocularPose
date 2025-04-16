@@ -40,6 +40,7 @@ class DataTab(QWidget):
         self.check_state = False
         self.sock = None
         self.connection_status = False
+        self.check_xy = False
 
         self.dataload = JsonFile()
         self.posedatalist = []
@@ -112,6 +113,7 @@ class DataTab(QWidget):
         self.txt_host.setEnabled(False)
         self.txt_port.setEnabled(False)
         self.btn_test_conn.setEnabled(False)
+        self.xzy2xyz = QCheckBox("yz轴交换")
 
         row3.addWidget(self.cb_forward)
         row3.addWidget(QLabel("目标地址:"))
@@ -120,6 +122,7 @@ class DataTab(QWidget):
         row3.addWidget(self.txt_port)
         row3.addWidget(self.btn_test_conn)
         row3.addWidget(self.lbl_conn_status)
+        row3.addWidget(self.xzy2xyz)
         row3.addStretch()
 
 
@@ -176,7 +179,11 @@ class DataTab(QWidget):
         self.play_timer.timeout.connect(self.update_playback)
         # 连接新信号
         self.cb_forward.stateChanged.connect(self.toggle_forwarding)
+        self.xzy2xyz.stateChanged.connect(self.yz_state)
         self.btn_test_conn.clicked.connect(self.test_connection)
+
+    def yz_state(self):
+        self.check_xy = not self.check_xy
 
     def toggle_forwarding(self):
         """切换转发功能状态"""
@@ -242,7 +249,7 @@ class DataTab(QWidget):
         try:
             # 转换为JSON格式
             json_data = json.dumps(frame_data)
-            self.sock.sendto(json_data.encode('utf-8'),(self.host, self.port))
+            self.sock.sendto(json_data.encode('utf-8'),(self.host, int(self.port)))
         except Exception as e:
             self.update_conn_status(False)
             print(f"数据发送失败: {str(e)}")
@@ -333,7 +340,7 @@ class DataTab(QWidget):
 
         self.progress.setValue(self.current_frame)
 
-        self.drawpose(np.array(self.posedatalist[self.current_frame]))
+        self.drawpose(self.posedatalist[self.current_frame])
         # 获取当前帧数据（示例）
         # current_data = {
         #     "frame": self.current_frame,
@@ -370,10 +377,13 @@ class DataTab(QWidget):
 
 
         try:
-            self.posedatalist = self.dataload.load_data_list(self.current_file)
-            self.datalen = len(self.posedatalist)
+            self.posedatalist = np.array(self.dataload.load_data_list(self.current_file))
+            self.datalen = self.posedatalist.shape[0]
             # 示例可视化逻辑
-            self.drawpose(np.array(self.posedatalist[0]))
+            if self.check_xy:
+                self.posedatalist[:,:,[1,2]] = self.posedatalist[:,:,[2,1]]
+
+            self.drawpose(self.posedatalist[0])
 
 
             self.set_playback_enabled(True)
@@ -421,9 +431,11 @@ class DataTab(QWidget):
 
     def run_pose(self, folder):
         self.set_playback_enabled(False)
+
+        videos_path = os.path.join(str(CONFIG.workdir), folder)
+        video_names = get_files_by_extension(videos_path)
+        jf = JsonFile(videos_path, videos_path + f'/run_{folder}.json')
         try:
-            videos_path = os.path.join(str(CONFIG.workdir), folder)
-            video_names = get_files_by_extension(videos_path)
 
             cameras = load_yml(str(CONFIG.calib_dir))
             caplist = []
@@ -431,8 +443,6 @@ class DataTab(QWidget):
                 video_path = os.path.join(videos_path, video_name)
                 cap = cv2.VideoCapture(video_path)
                 caplist.append(cap)
-
-            jf = JsonFile(videos_path, videos_path + f'/run_{folder}.json')
 
             cap_nums = len(caplist)
             frame_count = 0
@@ -449,6 +459,10 @@ class DataTab(QWidget):
                     break
 
                 keypoints3d = CONFIG.processor.run_process(frames, cameras)
+
+                if self.check_xy:
+                    keypoints3d[:,[1,2]] = keypoints3d[:,[2,1]]
+
                 self.drawpose(keypoints3d)
                 if self.cb_forward.isChecked():
                     current_data = {
@@ -460,9 +474,10 @@ class DataTab(QWidget):
                 jf.update(keypoints3d)
                 frame_count += 1
 
-            jf.save()
+
         finally:
             # 处理完成后恢复状态
+            jf.save()
             self.set_playback_enabled(True)
 
 

@@ -396,7 +396,7 @@ class SimpleHRNet:
                 [rot for _ in range(out.shape[0])])
             pts = np.concatenate((coords, max_val), axis=2)
             # return coco17tobody25(pts)
-            return coco17tobody25(pts)
+            return pts
         else:
             return np.empty(0, 25, 3)
         

@@ -1,5 +1,6 @@
 import os
 import threading
+import traceback
 from datetime import datetime
 
 import cv2
@@ -8,6 +9,7 @@ from typing import List, Union
 from BinocularPose.models.mymmpose.mymmpose import MyMMP
 from BinocularPose.models.hrnet.hrnet_api import SimpleHRNet
 from BinocularPose.models.yolo.yolo_det import Yolo_Det
+from BinocularPose.mytools.csv_file import CsvFile
 from BinocularPose.mytools.json_file import JsonFile
 from BinocularPose.mytools.load_para import load_yml
 from BinocularPose.visualize.plot3d import vis_plot
@@ -28,7 +30,7 @@ def get_files_by_extension(path, extension='.mp4'):
     matched_files = []
     for filename in os.listdir(path):
         full_path = os.path.join(path, filename)
-        if os.path.isfile(full_path) and filename.endswith(extension):
+        if os.path.isfile(full_path) and filename.endswith(extension) and filename.startswith('cam'):
             matched_files.append(full_path)
 
     return matched_files
@@ -53,14 +55,14 @@ class UnityInterfaceDemo(object):
         #                            fps=30,
         #                            work_dir=self.work_dri)
 
-        # self.processor = ThreeDPoseProcess(
-        #     yolo_model=Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt'),
-        #     pose_model=MyMMP('BinocularPose/models/mymmpose')
-        # )
         self.processor = ThreeDPoseProcess(
             yolo_model=Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt'),
-            pose_model=SimpleHRNet('BinocularPose/models/hrnet/weights/pose_hrnet_w48_384x288.pth')
+            pose_model=MyMMP('BinocularPose/models/mymmpose')
         )
+        # self.processor = ThreeDPoseProcess(
+        #     yolo_model=Yolo_Det('BinocularPose/models/mymmpose/weights/yolo11n.pt'),
+        #     pose_model=SimpleHRNet('BinocularPose/models/hrnet/weights/pose_hrnet_w48_384x288.pth')
+        # )
 
         self.online_thread = None
 
@@ -96,7 +98,7 @@ class UnityInterfaceDemo(object):
 
     def offline_pose(self, pose_name):
         timestamp = datetime.now().strftime("%m%d%H%M%S")
-        save_data_name = f"{pose_name}_{timestamp}.json"
+        save_data_name = f"{pose_name}.json"
         videos_path = os.path.join(self.work_dri, pose_name)
         video_names = get_files_by_extension(videos_path)
 
@@ -107,26 +109,31 @@ class UnityInterfaceDemo(object):
             video_path = os.path.join(videos_path, video_name)
             cap = cv2.VideoCapture(video_path)
             caplist.append(cap)
-        jf = JsonFile(videos_path, videos_path+'/run/'+save_data_name)
+        jf = JsonFile(videos_path, savedir+'/zsdata/'+save_data_name)
 
         cap_nums = len(caplist)
-        while True:
+        try:
+            while True:
 
-            frames = []
-            for cap in caplist:
-                ret, frame = cap.read()
-                if ret:
-                    frames.append(frame)
+                frames = []
+                for cap in caplist:
+                    ret, frame = cap.read()
+                    if ret:
+                        frames.append(frame)
 
-            if not cap_nums==len(frames):
-                print(f'视频已结束，共{jf.index}帧')
-                break
+                if not cap_nums==len(frames):
+                    print(f'视频已结束，共{jf.index}帧')
+                    break
 
-            keypoints3d = self.processor.run_process(frames, cameras)
-            plot.show(keypoints3d[:19])
-            jf.update(keypoints3d)
+                keypoints3d = self.processor.run_process(frames, cameras)
+                # plot.show(keypoints3d)
+                jf.update(keypoints3d)
+        except Exception:
+            print(traceback.format_exc())
+            jf.save()
+        finally:
+            jf.save()
 
-        jf.save()
 
 
     def online_pose(self, pose_name):
@@ -152,14 +159,17 @@ class UnityInterfaceDemo(object):
         jf.save()
 
 
-
+savedir = 'D:\Desktop\EveryThing\WorkProject\BinocularPose\demo_data\datasetdemo\dataset'
 
 if __name__ == '__main__':
 
     intri = 'D:\Desktop\EveryThing\WorkProject\Data\s1-videos'
-    work_dri = 'D:\Desktop\EveryThing\WorkProject\BinocularPose\demo_data\datasetdemo'
+    work_dri = 'D:\Desktop\EveryThing\WorkProject\Data\s1-videos'
 
     unity = UnityInterfaceDemo(work_dri=work_dri)
 
-    unity.offline_pose('pose1')
+    posenames = ['acting1']
+    for pose_name in posenames:
+        print(pose_name)
+        unity.offline_pose(pose_name)
 

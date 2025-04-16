@@ -152,9 +152,9 @@ def main():
 
     vizualizer.add_geometry(mesh_plane)
     vizualizer.add_geometry(cameraLines1)
-    # vizualizer.add_geometry(cameraLines2)
+    vizualizer.add_geometry(cameraLines2)
     vizualizer.add_geometry(extend_lineset1)
-    # vizualizer.add_geometry(extend_lineset2)
+    vizualizer.add_geometry(extend_lineset2)
     vizualizer.add_geometry(coor)
 
     vizualizer.run()

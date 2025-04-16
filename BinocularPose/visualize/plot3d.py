@@ -20,7 +20,7 @@ class vis_plot:
         self.ax.set_ylim3d(-1, 1.1)
         self.ax.set_zlim3d(0, 1.5)
         self.ax.scatter(keypoints3d[:, 0], keypoints3d[:, 1], keypoints3d[:, 2], s=10)
-        for _c in body25_con19:
+        for _c in connnection:
             self.ax.plot([keypoints3d[_c[0], 0], keypoints3d[_c[1], 0]],
                     [keypoints3d[_c[0], 1], keypoints3d[_c[1], 1]],
                     [keypoints3d[_c[0], 2], keypoints3d[_c[1], 2]], 'g')
